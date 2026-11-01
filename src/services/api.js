@@ -1,5 +1,8 @@
-export const API_BASE_URL = 'http://localhost:8080/api/v1';
-export const WS_BASE_URL = 'ws://localhost:8080/api/v1';
+const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
+
+export const API_BASE_URL = import.meta.env.VITE_API_URL || `${isHttps ? 'https:' : 'http:'}//${host}:8088/api/v1`;
+export const WS_BASE_URL = import.meta.env.VITE_WS_URL || `${isHttps ? 'wss:' : 'ws:'}//${host}:8088/api/v1`;
 
 export async function generateQRSession() {
   const res = await fetch(`${API_BASE_URL}/auth/qr/generate`, {
