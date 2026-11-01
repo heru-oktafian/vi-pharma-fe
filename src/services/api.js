@@ -1,8 +1,10 @@
-const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
-const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
+const isLocalhost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+const protocol = typeof window !== 'undefined' ? window.location.protocol : 'http:';
+const wsProtocol = protocol === 'https:' ? 'wss:' : 'ws:';
+const host = typeof window !== 'undefined' ? window.location.host : 'localhost:8088';
 
-export const API_BASE_URL = import.meta.env.VITE_API_URL || `${isHttps ? 'https:' : 'http:'}//${host}:8088/api/v1`;
-export const WS_BASE_URL = import.meta.env.VITE_WS_URL || `${isHttps ? 'wss:' : 'ws:'}//${host}:8088/api/v1`;
+export const API_BASE_URL = import.meta.env.VITE_API_URL || (isLocalhost ? 'http://localhost:8088/api/v1' : `${protocol}//${host}/api/v1`);
+export const WS_BASE_URL = import.meta.env.VITE_WS_URL || (isLocalhost ? 'ws://localhost:8088/api/v1' : `${wsProtocol}//${host}/api/v1`);
 
 export async function generateQRSession() {
   const res = await fetch(`${API_BASE_URL}/auth/qr/generate`, {
