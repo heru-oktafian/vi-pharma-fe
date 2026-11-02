@@ -8,6 +8,17 @@ export default {
   theme: {
     extend: {
       colors: {
+        heru: {
+          blue: '#2563EB',
+          'blue-dark': '#1D4ED8',
+          'blue-deep': '#1E40AF',
+          'blue-light': '#EFF6FF',
+          'blue-border': '#DBEAFE',
+          orange: '#F97316',
+          'orange-dark': '#EA580C',
+          'orange-light': '#FFF7ED',
+          'orange-border': '#FED7AA',
+        },
         clinical: {
           sage: '#4A7C6D',
           'sage-dark': '#345D51',

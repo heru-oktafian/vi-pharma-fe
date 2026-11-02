@@ -90,8 +90,8 @@ export default function App() {
 
   return (
     <div className={`h-screen h-dvh w-screen flex flex-col justify-between overflow-hidden transition-colors duration-200 ${
-      isLight ? 'bg-[#F8FAFC] text-slate-800' : 'bg-slate-950 text-slate-100'
-    } selection:bg-clinical-sage selection:text-white`}>
+      isLight ? 'bg-slate-50 text-slate-800' : 'bg-slate-950 text-slate-100'
+    } selection:bg-blue-600 selection:text-white`}>
       {step === 'WORKSTATION' ? (
         <WorkstationDashboard
           user={user}
@@ -110,14 +110,14 @@ export default function App() {
               onClick={toggleTheme}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium shadow-xs transition-all duration-150 border ${
                 isLight 
-                  ? 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200 hover:border-slate-300' 
+                  ? 'bg-white hover:bg-orange-50 text-slate-700 border-slate-200 hover:border-orange-300 hover:text-orange-500' 
                   : 'bg-slate-900/90 hover:bg-slate-800 text-slate-200 border-slate-800 hover:border-slate-700'
               }`}
               title="Ganti Tema Tampilan"
             >
               {isLight ? (
                 <>
-                  <Moon className="w-3.5 h-3.5 text-slate-500" />
+                  <Moon className="w-3.5 h-3.5 text-blue-600" />
                   <span className="text-[11px] font-semibold text-slate-700">Dark Mode</span>
                 </>
               ) : (
@@ -139,13 +139,17 @@ export default function App() {
 
           {/* App Header Branding (Compact) */}
           <div className="text-center relative z-10 shrink-0 mt-1 sm:mt-2">
-            <div className={`inline-flex items-center gap-2 px-3.5 py-1 rounded-full shadow-xs border transition-colors ${
-              isLight ? 'bg-white border-slate-200 text-slate-800' : 'bg-slate-900/90 border-slate-800 text-white'
+            <div className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full shadow-xs border transition-colors ${
+              isLight ? 'bg-white border-blue-100 text-slate-800' : 'bg-slate-900/90 border-slate-800 text-white'
             }`}>
-              <img src="/vimedika-logo.png" alt="Vimedika Logo" className="w-5 h-5 object-contain" onError={(e) => { e.target.style.display = 'none'; }} />
-              <span className="font-bold text-sm tracking-tight">Vi-Pharma System</span>
-              <span className={`text-[9px] uppercase font-bold px-1.5 py-0.5 rounded ${
-                isLight ? 'bg-clinical-sage-light text-clinical-sage-dark' : 'bg-emerald-500/20 text-emerald-400'
+              <img src="/vimedika-logo.png" alt="Vi-Pharma Logo" className="w-6 h-6 object-contain" onError={(e) => { e.target.style.display = 'none'; }} />
+              <span className={`font-bold text-sm tracking-tight ${isLight ? 'text-blue-600' : 'text-white'}`}>
+                Vi-<span className="text-orange-500">Pharma</span>
+              </span>
+              <span className={`text-[9px] uppercase font-bold px-1.5 py-0.5 rounded border ${
+                isLight 
+                  ? 'bg-blue-50 text-blue-700 border-blue-200' 
+                  : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
               }`}>
                 v1.0
               </span>
@@ -179,7 +183,7 @@ export default function App() {
           <footer className={`text-center text-[11px] relative z-10 shrink-0 pb-1 ${
             isLight ? 'text-slate-400' : 'text-slate-500'
           }`}>
-            © 2026 Vi-Pharma. Powered by <span className={isLight ? 'text-clinical-sage-dark font-semibold' : 'text-slate-400'}>Vimedika</span>.
+            © 2026 Vi-Pharma. Powered by <span className={isLight ? 'text-blue-600 font-semibold' : 'text-slate-400'}>Vimedika</span>.
           </footer>
         </div>
       )}

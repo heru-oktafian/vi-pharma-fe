@@ -82,25 +82,25 @@ export default function WorkstationDashboard({ user, branch, token, theme = 'dar
       }`}>
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden">
-            <img src="/vimedika-logo.png" alt="Logo" className="w-6 h-6 object-contain" onError={(e) => { e.target.style.display = 'none'; }} />
+            <img src="/vimedika-logo.png" alt="Vi-Pharma Logo" className="w-7 h-7 object-contain" onError={(e) => { e.target.style.display = 'none'; }} />
           </div>
           <div>
             <div className="flex items-center gap-2">
               <h1 className={`text-sm sm:text-base font-bold tracking-tight leading-none ${
-                isLight ? 'text-slate-900' : 'text-white'
+                isLight ? 'text-blue-600' : 'text-white'
               }`}>
-                Vi-Pharma
+                Vi-<span className="text-orange-500">Pharma</span>
               </h1>
               <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold border ${
                 isLight 
-                  ? 'bg-clinical-sage-light text-clinical-sage-dark border-clinical-sage-border' 
+                  ? 'bg-blue-50 text-blue-700 border-blue-200' 
                   : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
               }`}>
                 Workstation
               </span>
             </div>
             <div className="flex items-center gap-1 text-[11px] text-slate-400 leading-none mt-0.5">
-              <Building2 className={`w-3 h-3 shrink-0 ${isLight ? 'text-clinical-sage' : 'text-emerald-400'}`} />
+              <Building2 className={`w-3 h-3 shrink-0 ${isLight ? 'text-blue-600' : 'text-emerald-400'}`} />
               <strong className={`truncate max-w-[150px] sm:max-w-xs ${isLight ? 'text-slate-700' : 'text-slate-200'}`}>
                 {branch?.branch_name}
               </strong>
@@ -116,7 +116,7 @@ export default function WorkstationDashboard({ user, branch, token, theme = 'dar
               {user?.name}
             </span>
             <span className={`text-[10px] font-mono uppercase font-semibold ${
-              isLight ? 'text-clinical-sage-dark' : 'text-emerald-400'
+              isLight ? 'text-blue-600' : 'text-emerald-400'
             }`}>
               {user?.user_role}
             </span>
@@ -128,12 +128,12 @@ export default function WorkstationDashboard({ user, branch, token, theme = 'dar
               onClick={onToggleTheme}
               className={`p-1.5 rounded-lg border transition ${
                 isLight 
-                  ? 'bg-slate-100 hover:bg-slate-200 text-slate-600 border-slate-200' 
+                  ? 'bg-white hover:bg-orange-50 text-slate-600 border-slate-200 hover:border-orange-300 hover:text-orange-500' 
                   : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'
               }`}
               title={isLight ? 'Ganti ke Dark Mode' : 'Ganti ke Light Mode'}
             >
-              {isLight ? <Moon className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5 text-amber-400" />}
+              {isLight ? <Moon className="w-3.5 h-3.5 text-blue-600" /> : <Sun className="w-3.5 h-3.5 text-amber-400" />}
             </button>
           )}
 
@@ -141,7 +141,7 @@ export default function WorkstationDashboard({ user, branch, token, theme = 'dar
             onClick={onSwitchBranch}
             className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium border transition ${
               isLight
-                ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
+                ? 'bg-white hover:bg-blue-50 text-slate-700 border-slate-200 hover:border-blue-300 hover:text-blue-600'
                 : 'bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border-slate-700'
             }`}
             title="Ganti Cabang"
@@ -163,15 +163,15 @@ export default function WorkstationDashboard({ user, branch, token, theme = 'dar
 
       {/* Main Content Area (Strict 1-Screen Responsive) */}
       <main className="flex-1 min-h-0 max-w-7xl w-full mx-auto p-3 sm:p-4 md:p-5 flex flex-col gap-3 overflow-hidden">
-        {/* Branch Info Banner (Clinical Soft UI Card) */}
+        {/* Branch Info Banner */}
         <div className={`rounded-xl p-3 sm:p-3.5 shrink-0 flex flex-col lg:flex-row lg:items-center justify-between gap-3 transition-colors ${
           isLight
-            ? 'bg-white border border-slate-200 border-l-4 border-l-clinical-sage shadow-xs text-slate-800'
+            ? 'bg-white border border-slate-200 border-l-4 border-l-blue-600 shadow-xs text-slate-800'
             : 'bg-gradient-to-r from-slate-900 to-slate-800/80 border border-slate-800 shadow-md text-slate-100'
         }`}>
           <div>
             <div className={`inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider mb-0.5 ${
-              isLight ? 'text-clinical-sage-dark' : 'text-emerald-400'
+              isLight ? 'text-blue-600' : 'text-emerald-400'
             }`}>
               <ShieldCheck className="w-3.5 h-3.5" /> Izin Resmi Apotek Terverifikasi
             </div>
@@ -202,7 +202,7 @@ export default function WorkstationDashboard({ user, branch, token, theme = 'dar
             <div>
               <span className="text-slate-400 block text-[9px] uppercase font-bold">Status Jurnal</span>
               <span className={`font-mono text-xs font-bold uppercase ${
-                isLight ? 'text-clinical-sage-dark' : 'text-emerald-400'
+                isLight ? 'text-blue-700' : 'text-emerald-400'
               }`}>
                 {branchDetail?.journal_method || 'Perpetual'}
               </span>
@@ -217,7 +217,7 @@ export default function WorkstationDashboard({ user, branch, token, theme = 'dar
               Modul Operasional Cabang
             </h3>
             <span className={`text-[11px] ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
-              Role: <strong className={`font-mono ${isLight ? 'text-clinical-sage-dark font-bold' : 'text-emerald-400'}`}>{user?.user_role}</strong>
+              Role: <strong className={`font-mono ${isLight ? 'text-blue-600 font-bold' : 'text-emerald-400'}`}>{user?.user_role}</strong>
             </span>
           </div>
 
@@ -228,10 +228,10 @@ export default function WorkstationDashboard({ user, branch, token, theme = 'dar
               return (
                 <div
                   key={idx}
-                  className={`p-3.5 sm:p-4 rounded-xl border flex flex-col justify-between transition-all ${
+                  className={`p-3.5 sm:p-4 rounded-xl border flex flex-col justify-between transition-all duration-200 ${
                     isAllowed
                       ? isLight
-                        ? 'bg-white border-slate-200/90 hover:border-slate-300 hover:shadow-xs cursor-pointer group'
+                        ? 'bg-white border-slate-200/90 hover:border-orange-400 hover:shadow-md cursor-pointer group'
                         : 'bg-slate-900/70 border-slate-800 hover:border-slate-700 hover:bg-slate-900 hover:shadow-lg cursor-pointer group'
                       : isLight
                         ? 'bg-slate-50/70 border-slate-200/60 opacity-50 cursor-not-allowed'
@@ -254,7 +254,7 @@ export default function WorkstationDashboard({ user, branch, token, theme = 'dar
 
                     <h4 className={`text-sm font-bold mb-1 leading-snug transition-colors ${
                       isAllowed 
-                        ? isLight ? 'text-slate-900 group-hover:text-clinical-sage-dark' : 'text-white group-hover:text-emerald-300' 
+                        ? isLight ? 'text-slate-900 group-hover:text-blue-600' : 'text-white group-hover:text-emerald-300' 
                         : 'text-slate-400'
                     }`}>
                       {m.title}
@@ -270,8 +270,8 @@ export default function WorkstationDashboard({ user, branch, token, theme = 'dar
                     isLight ? 'border-slate-100' : 'border-slate-800/80'
                   }`}>
                     {isAllowed ? (
-                      <span className={`flex items-center gap-1 group-hover:translate-x-0.5 transition ${
-                        isLight ? 'text-clinical-sage-dark' : 'text-emerald-400'
+                      <span className={`flex items-center gap-1 group-hover:translate-x-1 transition-transform ${
+                        isLight ? 'text-blue-600 group-hover:text-orange-500 font-semibold' : 'text-emerald-400'
                       }`}>
                         Buka Modul →
                       </span>
