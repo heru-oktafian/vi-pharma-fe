@@ -80,9 +80,9 @@ export default function WorkstationDashboard({ user, branch, token, theme = 'dar
           ? 'bg-white border-vip-navy-border shadow-xs'
           : 'bg-slate-900/90 border-slate-800 backdrop-blur-md'
       }`}>
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden">
-            <img src="/vimedika-logo.png" alt="Vi-Pharma Logo" className="w-7 h-7 object-contain" onError={(e) => { e.target.style.display = 'none'; }} />
+        <div className="flex items-center gap-3">
+          <div className="h-8 flex items-center justify-center">
+            <img src="/vimedika-logo.png" alt="APOTEK Sistem Informasi" className="h-8 w-auto object-contain" onError={(e) => { e.target.style.display = 'none'; }} />
           </div>
           <div>
             <div className="flex items-center gap-2">

@@ -130,15 +130,20 @@ export default function App() {
           )}
 
           {/* App Header Branding */}
-          <div className="text-center relative z-10 shrink-0 mt-1 sm:mt-2">
-            <div className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full shadow-xs border transition-colors ${
-              isLight ? 'bg-white border-vip-navy-border text-slate-800' : 'bg-slate-900/90 border-slate-800 text-white'
+          <div className="text-center relative z-10 shrink-0 flex flex-col items-center mt-1 sm:mt-2">
+            <img
+              src="/vimedika-logo.png"
+              alt="APOTEK Sistem Informasi"
+              className="h-14 sm:h-16 w-auto object-contain drop-shadow-sm transition-transform hover:scale-105 duration-200"
+              onError={(e) => { e.target.style.display = 'none'; }}
+            />
+            <div className={`inline-flex items-center gap-2 mt-1.5 px-3 py-0.5 rounded-full shadow-xs border transition-colors ${
+              isLight ? 'bg-white/85 border-vip-navy-border text-slate-800' : 'bg-slate-900/90 border-slate-800 text-white'
             }`}>
-              <img src="/vimedika-logo.png" alt="Vi-Pharma Logo" className="w-6 h-6 object-contain" onError={(e) => { e.target.style.display = 'none'; }} />
-              <span className={`font-bold text-sm tracking-tight ${isLight ? 'text-vip-navy' : 'text-white'}`}>
-                Vi-<span className="text-vip-orange">Pharma</span>
+              <span className={`font-semibold text-xs tracking-tight ${isLight ? 'text-vip-navy' : 'text-slate-200'}`}>
+                Vi-<span className="text-vip-orange">Pharma</span> Workstation
               </span>
-              <span className={`text-[9px] uppercase font-bold px-1.5 py-0.5 rounded border ${
+              <span className={`text-[9px] uppercase font-bold px-1.5 py-0.2 rounded border ${
                 isLight
                   ? 'bg-vip-navy-light text-vip-navy border-vip-navy-border'
                   : 'bg-blue-500/20 text-blue-300 border-blue-500/30'
@@ -146,11 +151,6 @@ export default function App() {
                 v1.0
               </span>
             </div>
-            <p className={`text-[11px] mt-1 max-w-xs mx-auto line-clamp-1 ${
-              isLight ? 'text-slate-500' : 'text-slate-400'
-            }`}>
-              Sistem Informasi Manajemen Apotek & Jaringan Multi-Cabang
-            </p>
           </div>
 
           {/* Main Card Switcher */}
