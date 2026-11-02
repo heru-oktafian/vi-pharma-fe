@@ -8,6 +8,15 @@ export default {
   theme: {
     extend: {
       colors: {
+        clinical: {
+          sage: '#4A7C6D',
+          'sage-dark': '#345D51',
+          'sage-light': '#EBF2EE',
+          'sage-border': '#CADBD4',
+          amber: '#D97706',
+          'amber-light': '#FFFBEB',
+          'amber-border': '#FDE68A',
+        },
         vimedika: {
           green: '#709D89',
           'green-dark': '#598370',

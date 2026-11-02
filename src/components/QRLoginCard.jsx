@@ -111,21 +111,21 @@ export default function QRLoginCard({ onAuthorized, theme = 'dark' }) {
   };
 
   return (
-    <div className={`backdrop-blur-xl border rounded-2xl shadow-2xl p-5 sm:p-6 max-w-xs sm:max-w-sm w-full text-center relative overflow-hidden flex flex-col justify-between transition-all duration-300 ${
+    <div className={`rounded-2xl p-5 sm:p-6 max-w-xs sm:max-w-sm w-full text-center relative overflow-hidden flex flex-col justify-between transition-all duration-200 border ${
       isLight 
-        ? 'bg-white/95 border-slate-200/90 shadow-slate-200/60' 
-        : 'bg-slate-800/85 border-slate-700/60'
+        ? 'bg-white border-slate-200/90 shadow-sm text-slate-800' 
+        : 'bg-slate-800/85 backdrop-blur-xl border-slate-700/60 shadow-2xl text-slate-100'
     }`}>
       {/* Top Banner (Compact) */}
       <div className="mb-3.5">
-        <div className={`inline-flex items-center justify-center w-10 h-10 rounded-xl mb-2 border shadow-inner transition-colors ${
+        <div className={`inline-flex items-center justify-center w-10 h-10 rounded-xl mb-2 border transition-colors ${
           isLight
-            ? 'bg-vimedika-green-light text-vimedika-green border-vimedika-green/30'
+            ? 'bg-clinical-sage-light text-clinical-sage-dark border-clinical-sage-border'
             : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
         }`}>
           <Smartphone className="w-5 h-5" />
         </div>
-        <h2 className={`text-lg sm:text-xl font-bold tracking-tight transition-colors ${
+        <h2 className={`text-lg sm:text-xl font-bold tracking-tight ${
           isLight ? 'text-slate-900' : 'text-white'
         }`}>
           Login dengan vi-token
@@ -133,17 +133,17 @@ export default function QRLoginCard({ onAuthorized, theme = 'dark' }) {
         <p className={`text-xs mt-0.5 leading-snug ${
           isLight ? 'text-slate-600' : 'text-slate-400'
         }`}>
-          Buka <span className={`font-semibold ${isLight ? 'text-vimedika-green-dark' : 'text-emerald-400'}`}>vi-token</span> di ponsel Anda, lalu pindai QR code berikut.
+          Buka <span className={`font-semibold ${isLight ? 'text-clinical-sage-dark' : 'text-emerald-400'}`}>vi-token</span> di ponsel Anda, lalu pindai QR code berikut.
         </p>
       </div>
 
       {/* QR Code Container (Responsive & Fit) */}
-      <div className={`relative inline-block p-2.5 sm:p-3 rounded-xl shadow-lg mx-auto transition-colors ${
-        isLight ? 'bg-white border border-slate-200/80 shadow-slate-200/70' : 'bg-white'
+      <div className={`relative inline-block p-2.5 sm:p-3 rounded-xl mx-auto transition-colors ${
+        isLight ? 'bg-white border border-slate-200 shadow-xs' : 'bg-white shadow-lg'
       }`}>
         {loading ? (
           <div className="w-44 h-44 flex flex-col items-center justify-center bg-slate-50 rounded-lg">
-            <RefreshCw className={`w-7 h-7 animate-spin mb-1.5 ${isLight ? 'text-vimedika-green' : 'text-emerald-600'}`} />
+            <RefreshCw className={`w-7 h-7 animate-spin mb-1.5 ${isLight ? 'text-clinical-sage' : 'text-emerald-600'}`} />
             <span className="text-xs text-slate-500 font-medium">Membuat QR...</span>
           </div>
         ) : error ? (
@@ -158,15 +158,15 @@ export default function QRLoginCard({ onAuthorized, theme = 'dark' }) {
             </button>
           </div>
         ) : secondsLeft <= 0 ? (
-          <div className="w-44 h-44 flex flex-col items-center justify-center bg-slate-100 rounded-lg p-2.5 text-center">
-            <AlertCircle className={`w-8 h-8 mb-1 ${isLight ? 'text-vimedika-orange' : 'text-amber-500'}`} />
+          <div className="w-44 h-44 flex flex-col items-center justify-center bg-slate-50 rounded-lg p-2.5 text-center">
+            <AlertCircle className="w-8 h-8 mb-1 text-clinical-amber" />
             <span className="text-xs font-bold text-slate-700">QR Kedaluwarsa</span>
             <p className="text-[10px] text-slate-500 mt-0.5 mb-2">Masa berlaku 120 detik habis.</p>
             <button
               onClick={initSession}
-              className={`px-3 py-1 text-white rounded-md text-[11px] font-semibold flex items-center gap-1 shadow-sm transition ${
+              className={`px-3 py-1 text-white rounded-md text-[11px] font-semibold flex items-center gap-1 shadow-xs transition ${
                 isLight 
-                  ? 'bg-vimedika-green hover:bg-vimedika-green-dark' 
+                  ? 'bg-clinical-sage hover:bg-clinical-sage-dark' 
                   : 'bg-emerald-600 hover:bg-emerald-700'
               }`}
             >
@@ -175,8 +175,8 @@ export default function QRLoginCard({ onAuthorized, theme = 'dark' }) {
           </div>
         ) : wsStatus === 'AUTHORIZED' ? (
           <div className="w-44 h-44 flex flex-col items-center justify-center bg-emerald-50 rounded-lg p-2.5 text-center">
-            <CheckCircle2 className={`w-10 h-10 animate-bounce mb-1.5 ${isLight ? 'text-vimedika-green' : 'text-emerald-500'}`} />
-            <span className={`text-sm font-bold ${isLight ? 'text-vimedika-green-dark' : 'text-emerald-800'}`}>Scan Berhasil!</span>
+            <CheckCircle2 className={`w-10 h-10 animate-bounce mb-1.5 ${isLight ? 'text-clinical-sage' : 'text-emerald-500'}`} />
+            <span className={`text-sm font-bold ${isLight ? 'text-clinical-sage-dark' : 'text-emerald-800'}`}>Scan Berhasil!</span>
             <span className="text-[11px] text-emerald-600 mt-0.5">Memuat cabang...</span>
           </div>
         ) : (
@@ -190,7 +190,7 @@ export default function QRLoginCard({ onAuthorized, theme = 'dark' }) {
             />
             {/* Center Brand Icon */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-8 h-8 bg-white rounded-lg shadow flex items-center justify-center border border-slate-200">
+              <div className="w-8 h-8 bg-white rounded-lg shadow-xs flex items-center justify-center border border-slate-200">
                 <img src="/vimedika-logo.png" alt="Logo" className="w-5 h-5 object-contain" onError={(e) => { e.target.style.display = 'none'; }} />
               </div>
             </div>
@@ -203,15 +203,15 @@ export default function QRLoginCard({ onAuthorized, theme = 'dark' }) {
         <div className="mt-3.5 space-y-1.5">
           <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] border transition-colors ${
             isLight
-              ? 'bg-vimedika-green-light/80 border-vimedika-green/30 text-vimedika-green-dark font-medium'
+              ? 'bg-slate-100 border-slate-200 text-slate-700 font-medium'
               : 'bg-slate-700/60 border-slate-600/50 text-slate-300 font-medium'
           }`}>
             <span className="relative flex h-2 w-2">
               <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
-                isLight ? 'bg-vimedika-green' : 'bg-emerald-400'
+                isLight ? 'bg-clinical-sage' : 'bg-emerald-400'
               }`}></span>
               <span className={`relative inline-flex rounded-full h-2 w-2 ${
-                isLight ? 'bg-vimedika-green' : 'bg-emerald-500'
+                isLight ? 'bg-clinical-sage' : 'bg-emerald-500'
               }`}></span>
             </span>
             <span>Menunggu scan vi-token</span>
@@ -222,13 +222,13 @@ export default function QRLoginCard({ onAuthorized, theme = 'dark' }) {
           }`}>
             <span>
               Berlaku: <strong className={`font-mono font-bold ${
-                isLight ? 'text-vimedika-orange-dark' : 'text-amber-400'
+                isLight ? 'text-clinical-amber' : 'text-amber-400'
               }`}>{formatTimer(secondsLeft)}</strong>
             </span>
             <button
               onClick={initSession}
               className={`flex items-center gap-1 transition text-[11px] ${
-                isLight ? 'text-slate-500 hover:text-vimedika-green-dark' : 'text-slate-400 hover:text-emerald-400'
+                isLight ? 'text-slate-500 hover:text-clinical-sage-dark' : 'text-slate-400 hover:text-emerald-400'
               }`}
             >
               <RefreshCw className="w-3 h-3" /> Refresh
@@ -239,9 +239,9 @@ export default function QRLoginCard({ onAuthorized, theme = 'dark' }) {
 
       {/* Security Footnote */}
       <div className={`mt-3.5 pt-2.5 border-t flex items-center justify-center gap-1.5 text-[10px] transition-colors ${
-        isLight ? 'border-slate-200 text-slate-500' : 'border-slate-700/60 text-slate-400'
+        isLight ? 'border-slate-100 text-slate-400' : 'border-slate-700/60 text-slate-400'
       }`}>
-        <ShieldCheck className={`w-3.5 h-3.5 shrink-0 ${isLight ? 'text-vimedika-green' : 'text-emerald-400'}`} />
+        <ShieldCheck className={`w-3.5 h-3.5 shrink-0 ${isLight ? 'text-clinical-sage' : 'text-emerald-400'}`} />
         <span>Terenkripsi End-to-End dengan JWT & WebSocket</span>
       </div>
     </div>

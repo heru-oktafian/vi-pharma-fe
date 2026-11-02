@@ -89,9 +89,9 @@ export default function App() {
   const isLight = theme === 'light';
 
   return (
-    <div className={`h-screen h-dvh w-screen flex flex-col justify-between overflow-hidden transition-colors duration-300 ${
-      isLight ? 'bg-[#F4F7F6] text-slate-800' : 'bg-slate-950 text-slate-100'
-    } selection:bg-vimedika-green selection:text-white`}>
+    <div className={`h-screen h-dvh w-screen flex flex-col justify-between overflow-hidden transition-colors duration-200 ${
+      isLight ? 'bg-[#F8FAFC] text-slate-800' : 'bg-slate-950 text-slate-100'
+    } selection:bg-clinical-sage selection:text-white`}>
       {step === 'WORKSTATION' ? (
         <WorkstationDashboard
           user={user}
@@ -108,44 +108,44 @@ export default function App() {
           <div className="absolute top-3 right-4 z-30">
             <button
               onClick={toggleTheme}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm transition-all duration-200 border ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium shadow-xs transition-all duration-150 border ${
                 isLight 
-                  ? 'bg-white/90 hover:bg-white text-slate-700 border-slate-200 hover:border-vimedika-green shadow-slate-200' 
-                  : 'bg-slate-900/90 hover:bg-slate-800 text-slate-200 border-slate-800 hover:border-slate-700 shadow-black'
+                  ? 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200 hover:border-slate-300' 
+                  : 'bg-slate-900/90 hover:bg-slate-800 text-slate-200 border-slate-800 hover:border-slate-700'
               }`}
               title="Ganti Tema Tampilan"
             >
               {isLight ? (
                 <>
-                  <Moon className="w-3.5 h-3.5 text-slate-600" />
-                  <span className="text-[11px]">Dark Mode</span>
+                  <Moon className="w-3.5 h-3.5 text-slate-500" />
+                  <span className="text-[11px] font-semibold text-slate-700">Dark Mode</span>
                 </>
               ) : (
                 <>
-                  <Sun className="w-3.5 h-3.5 text-vimedika-orange" />
-                  <span className="text-[11px]">Light Mode</span>
+                  <Sun className="w-3.5 h-3.5 text-amber-400" />
+                  <span className="text-[11px] font-semibold text-slate-300">Light Mode</span>
                 </>
               )}
             </button>
           </div>
 
-          {/* Background Ambient Glow */}
-          <div className={`absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full blur-3xl pointer-events-none transition-colors duration-500 ${
-            isLight ? 'bg-vimedika-green/15' : 'bg-emerald-500/10'
-          }`} />
-          <div className={`absolute bottom-1/4 left-1/3 -translate-x-1/2 w-72 h-72 rounded-full blur-3xl pointer-events-none transition-colors duration-500 ${
-            isLight ? 'bg-vimedika-orange/15' : 'bg-blue-500/10'
-          }`} />
+          {/* Ambient Glows ONLY in Dark Mode (No glare in Light Mode) */}
+          {!isLight && (
+            <>
+              <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full blur-3xl pointer-events-none bg-emerald-500/10" />
+              <div className="absolute bottom-1/4 left-1/3 -translate-x-1/2 w-72 h-72 rounded-full blur-3xl pointer-events-none bg-blue-500/10" />
+            </>
+          )}
 
           {/* App Header Branding (Compact) */}
           <div className="text-center relative z-10 shrink-0 mt-1 sm:mt-2">
-            <div className={`inline-flex items-center gap-2 px-3.5 py-1 rounded-full shadow-sm border transition-colors ${
-              isLight ? 'bg-white/95 border-slate-200' : 'bg-slate-900/90 border-slate-800'
+            <div className={`inline-flex items-center gap-2 px-3.5 py-1 rounded-full shadow-xs border transition-colors ${
+              isLight ? 'bg-white border-slate-200 text-slate-800' : 'bg-slate-900/90 border-slate-800 text-white'
             }`}>
               <img src="/vimedika-logo.png" alt="Vimedika Logo" className="w-5 h-5 object-contain" onError={(e) => { e.target.style.display = 'none'; }} />
-              <span className={`font-bold text-sm tracking-tight ${isLight ? 'text-slate-900' : 'text-white'}`}>Vi-Pharma System</span>
+              <span className="font-bold text-sm tracking-tight">Vi-Pharma System</span>
               <span className={`text-[9px] uppercase font-bold px-1.5 py-0.5 rounded ${
-                isLight ? 'bg-vimedika-green-light text-vimedika-green-dark' : 'bg-emerald-500/20 text-emerald-400'
+                isLight ? 'bg-clinical-sage-light text-clinical-sage-dark' : 'bg-emerald-500/20 text-emerald-400'
               }`}>
                 v1.0
               </span>
@@ -176,10 +176,10 @@ export default function App() {
           </div>
 
           {/* Compact Footer */}
-          <footer className={`text-center text-[11px] relative z-10 shrink-0 pb-1 transition-colors ${
+          <footer className={`text-center text-[11px] relative z-10 shrink-0 pb-1 ${
             isLight ? 'text-slate-400' : 'text-slate-500'
           }`}>
-            © 2026 Vi-Pharma. Powered by <span className={isLight ? 'text-vimedika-green font-semibold' : 'text-slate-400'}>Vimedika</span>.
+            © 2026 Vi-Pharma. Powered by <span className={isLight ? 'text-clinical-sage-dark font-semibold' : 'text-slate-400'}>Vimedika</span>.
           </footer>
         </div>
       )}
