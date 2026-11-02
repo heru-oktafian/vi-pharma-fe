@@ -64,25 +64,17 @@ export default function App() {
     setUser(authedUser);
     setStep('WORKSTATION');
 
-    // Save to localStorage
     localStorage.setItem('vipharma_token', token);
     localStorage.setItem('vipharma_user', JSON.stringify(authedUser));
     localStorage.setItem('vipharma_branch', JSON.stringify(branch));
   };
 
-  // Switch Branch (keeps user logged in if they have more branches)
-  const handleSwitchBranch = () => {
-    setStep('SELECT_BRANCH');
-  };
+  const handleSwitchBranch = () => { setStep('SELECT_BRANCH'); };
 
-  // Logout
   const handleLogout = () => {
     localStorage.clear();
-    setUser(null);
-    setBranches([]);
-    setSessionId(null);
-    setSelectedBranch(null);
-    setWebToken(null);
+    setUser(null); setBranches([]); setSessionId(null);
+    setSelectedBranch(null); setWebToken(null);
     setStep('LOGIN');
   };
 
@@ -90,8 +82,8 @@ export default function App() {
 
   return (
     <div className={`h-screen h-dvh w-screen flex flex-col justify-between overflow-hidden transition-colors duration-200 ${
-      isLight ? 'bg-slate-50 text-slate-800' : 'bg-slate-950 text-slate-100'
-    } selection:bg-blue-600 selection:text-white`}>
+      isLight ? 'bg-vip-navy-light text-slate-800' : 'bg-slate-950 text-slate-100'
+    } selection:bg-vip-navy selection:text-white`}>
       {step === 'WORKSTATION' ? (
         <WorkstationDashboard
           user={user}
@@ -109,16 +101,16 @@ export default function App() {
             <button
               onClick={toggleTheme}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium shadow-xs transition-all duration-150 border ${
-                isLight 
-                  ? 'bg-white hover:bg-orange-50 text-slate-700 border-slate-200 hover:border-orange-300 hover:text-orange-500' 
+                isLight
+                  ? 'bg-white hover:bg-vip-orange-light text-slate-700 border-vip-navy-border hover:border-vip-orange hover:text-vip-orange'
                   : 'bg-slate-900/90 hover:bg-slate-800 text-slate-200 border-slate-800 hover:border-slate-700'
               }`}
               title="Ganti Tema Tampilan"
             >
               {isLight ? (
                 <>
-                  <Moon className="w-3.5 h-3.5 text-blue-600" />
-                  <span className="text-[11px] font-semibold text-slate-700">Dark Mode</span>
+                  <Moon className="w-3.5 h-3.5 text-vip-navy" />
+                  <span className="text-[11px] font-semibold text-vip-navy">Dark Mode</span>
                 </>
               ) : (
                 <>
@@ -129,27 +121,27 @@ export default function App() {
             </button>
           </div>
 
-          {/* Ambient Glows ONLY in Dark Mode (No glare in Light Mode) */}
+          {/* Ambient Glows — Dark Mode only */}
           {!isLight && (
             <>
-              <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full blur-3xl pointer-events-none bg-emerald-500/10" />
-              <div className="absolute bottom-1/4 left-1/3 -translate-x-1/2 w-72 h-72 rounded-full blur-3xl pointer-events-none bg-blue-500/10" />
+              <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full blur-3xl pointer-events-none bg-blue-700/10" />
+              <div className="absolute bottom-1/4 left-1/3 -translate-x-1/2 w-72 h-72 rounded-full blur-3xl pointer-events-none bg-orange-600/10" />
             </>
           )}
 
-          {/* App Header Branding (Compact) */}
+          {/* App Header Branding */}
           <div className="text-center relative z-10 shrink-0 mt-1 sm:mt-2">
             <div className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full shadow-xs border transition-colors ${
-              isLight ? 'bg-white border-blue-100 text-slate-800' : 'bg-slate-900/90 border-slate-800 text-white'
+              isLight ? 'bg-white border-vip-navy-border text-slate-800' : 'bg-slate-900/90 border-slate-800 text-white'
             }`}>
               <img src="/vimedika-logo.png" alt="Vi-Pharma Logo" className="w-6 h-6 object-contain" onError={(e) => { e.target.style.display = 'none'; }} />
-              <span className={`font-bold text-sm tracking-tight ${isLight ? 'text-blue-600' : 'text-white'}`}>
-                Vi-<span className="text-orange-500">Pharma</span>
+              <span className={`font-bold text-sm tracking-tight ${isLight ? 'text-vip-navy' : 'text-white'}`}>
+                Vi-<span className="text-vip-orange">Pharma</span>
               </span>
               <span className={`text-[9px] uppercase font-bold px-1.5 py-0.5 rounded border ${
-                isLight 
-                  ? 'bg-blue-50 text-blue-700 border-blue-200' 
-                  : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+                isLight
+                  ? 'bg-vip-navy-light text-vip-navy border-vip-navy-border'
+                  : 'bg-blue-500/20 text-blue-300 border-blue-500/30'
               }`}>
                 v1.0
               </span>
@@ -161,12 +153,11 @@ export default function App() {
             </p>
           </div>
 
-          {/* Main Card Switcher (Centered & Scaled) */}
+          {/* Main Card Switcher */}
           <div className="relative z-10 w-full flex-1 flex items-center justify-center min-h-0 my-auto py-2">
             {step === 'LOGIN' && (
               <QRLoginCard onAuthorized={handleAuthorized} theme={theme} />
             )}
-
             {step === 'SELECT_BRANCH' && (
               <BranchSelector
                 user={user}
@@ -179,11 +170,11 @@ export default function App() {
             )}
           </div>
 
-          {/* Compact Footer */}
+          {/* Footer */}
           <footer className={`text-center text-[11px] relative z-10 shrink-0 pb-1 ${
-            isLight ? 'text-slate-400' : 'text-slate-500'
+            isLight ? 'text-slate-500' : 'text-slate-500'
           }`}>
-            © 2026 Vi-Pharma. Powered by <span className={isLight ? 'text-blue-600 font-semibold' : 'text-slate-400'}>Vimedika</span>.
+            © 2026 Vi-Pharma — <span className={isLight ? 'text-vip-navy font-semibold' : 'text-slate-400'}>Apotek Sistem Informasi</span>
           </footer>
         </div>
       )}

@@ -8,17 +8,20 @@ export default {
   theme: {
     extend: {
       colors: {
-        heru: {
-          blue: '#2563EB',
-          'blue-dark': '#1D4ED8',
-          'blue-deep': '#1E40AF',
-          'blue-light': '#EFF6FF',
-          'blue-border': '#DBEAFE',
-          orange: '#F97316',
-          'orange-dark': '#EA580C',
-          'orange-light': '#FFF7ED',
-          'orange-border': '#FED7AA',
+        // Vi-Pharma brand palette — extracted from the APOTEK Sistem Informasi logo
+        vip: {
+          navy:        '#00287E',   // deep navy blue (main circle & palang)
+          'navy-dark': '#001A52',   // darker navy for hover
+          'navy-mid':  '#0038A8',   // mid navy
+          'navy-light':'#E8EEF9',   // very light navy tint (card bg)
+          'navy-border':'#C0CFEE',  // navy border
+          orange:      '#F76100',   // vibrant orange (flame & capsule)
+          'orange-dark':'#C44E00',  // darker orange for hover
+          'orange-mid': '#FF8C38',  // lighter orange
+          'orange-light':'#FFF3E8', // tint for bg
+          'orange-border':'#FFD0AA',// border
         },
+        // Kept for dark-mode reuse
         clinical: {
           sage: '#4A7C6D',
           'sage-dark': '#345D51',
@@ -28,24 +31,6 @@ export default {
           'amber-light': '#FFFBEB',
           'amber-border': '#FDE68A',
         },
-        vimedika: {
-          green: '#709D89',
-          'green-dark': '#598370',
-          'green-light': '#EBF3F0',
-          orange: '#FBA220',
-          'orange-dark': '#E08C12',
-          'orange-light': '#FEF5E8',
-        },
-        brand: {
-          50: '#ecfdf5',
-          100: '#d1fae5',
-          200: '#a7f3d0',
-          500: '#10b981',
-          600: '#059669',
-          700: '#047857',
-          800: '#065f46',
-          900: '#064e3b',
-        }
       }
     },
   },
