@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Smartphone, ShieldCheck, RefreshCw, CheckCircle2, AlertCircle } from 'lucide-react';
-import { generateQRSession, API_BASE_URL, WS_BASE_URL } from '../services/api';
-
-const WS_BASE = WS_BASE_URL.replace(/\/api\/v1$/, '');
+import { generateQRSession, checkQRSessionStatus, WS_BASE_URL } from '../services/api';
 
 export default function QRLoginCard({ onAuthorized, theme = 'dark' }) {
   const [session, setSession] = useState(null);
@@ -11,81 +9,139 @@ export default function QRLoginCard({ onAuthorized, theme = 'dark' }) {
   const [error, setError] = useState(null);
   const [wsStatus, setWsStatus] = useState('CONNECTING');
   const [secondsLeft, setSecondsLeft] = useState(120);
+
   const wsRef = useRef(null);
   const timerRef = useRef(null);
+  const pollRef = useRef(null);
+  const authorizedRef = useRef(false);
   const isLight = theme === 'light';
+
+  const cleanup = () => {
+    if (wsRef.current) {
+      try { wsRef.current.close(); } catch (_) {}
+      wsRef.current = null;
+    }
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
+  };
+
+  const handleSuccessAuth = (authData) => {
+    if (authorizedRef.current) return;
+    authorizedRef.current = true;
+    setWsStatus('AUTHORIZED');
+    cleanup();
+
+    setTimeout(() => {
+      if (onAuthorized) {
+        onAuthorized(authData);
+      }
+    }, 600);
+  };
 
   const initSession = async () => {
     try {
+      cleanup();
+      authorizedRef.current = false;
       setLoading(true);
       setError(null);
       setWsStatus('CONNECTING');
       setSecondsLeft(120);
-      if (wsRef.current) wsRef.current.close();
-      if (timerRef.current) clearInterval(timerRef.current);
 
       const data = await generateQRSession();
       setSession(data);
+      const expiresIn = data.expires_in_seconds || 120;
+      setSecondsLeft(expiresIn);
       setLoading(false);
 
-      // Countdown timer
+      // 1. Countdown timer
       timerRef.current = setInterval(() => {
         setSecondsLeft((s) => {
-          if (s <= 1) { clearInterval(timerRef.current); return 0; }
+          if (s <= 1) {
+            cleanup();
+            setWsStatus('EXPIRED');
+            return 0;
+          }
           return s - 1;
         });
       }, 1000);
 
+      // 2. WebSocket listener
       connectWS(data.session_id);
+
+      // 3. Fallback Polling (checks every 2 seconds in case WebSocket fails or is blocked)
+      pollRef.current = setInterval(async () => {
+        if (authorizedRef.current) return;
+        try {
+          const statusRes = await checkQRSessionStatus(data.session_id);
+          if (statusRes && statusRes.status === 'AUTHORIZED') {
+            handleSuccessAuth({
+              user: statusRes.user,
+              branches: statusRes.branches,
+              sessionId: data.session_id,
+            });
+          }
+        } catch (_) {
+          // Silent polling error (WS is primary)
+        }
+      }, 2000);
+
     } catch (err) {
+      cleanup();
       setError(err.message || 'Gagal membuat sesi QR');
       setLoading(false);
     }
   };
 
   const connectWS = (sessionId) => {
-    const wsUrl = `${WS_BASE}/ws/qr/${sessionId}`;
-    const ws = new WebSocket(wsUrl);
-    wsRef.current = ws;
+    try {
+      const wsUrl = `${WS_BASE_URL}/auth/qr/ws/${sessionId}`;
+      const ws = new WebSocket(wsUrl);
+      wsRef.current = ws;
 
-    ws.onopen = () => setWsStatus('WAITING');
+      ws.onopen = () => {
+        if (!authorizedRef.current) setWsStatus('WAITING');
+      };
 
-    ws.onmessage = (event) => {
-      try {
-        const msg = JSON.parse(event.data);
-        if (msg.type === 'QR_AUTHORIZED' || msg.status === 'AUTHORIZED') {
-          setWsStatus('AUTHORIZED');
-          clearInterval(timerRef.current);
-          setTimeout(() => {
-            if (onAuthorized) {
-              onAuthorized({
-                user: msg.user,
-                branches: msg.branches,
-                sessionId: msg.session_id,
-              });
-            }
-          }, 800);
+      ws.onmessage = (event) => {
+        try {
+          const msg = JSON.parse(event.data);
+          // Backend sends: { event: "QR_AUTHORIZED", data: { session_id, user, branches } }
+          if (msg.event === 'QR_AUTHORIZED' || msg.type === 'QR_AUTHORIZED' || msg.status === 'AUTHORIZED') {
+            const payload = msg.data || msg;
+            handleSuccessAuth({
+              user: payload.user,
+              branches: payload.branches,
+              sessionId: payload.session_id || sessionId,
+            });
+          }
+        } catch (e) {
+          console.error('WS Parse Error:', e);
         }
-      } catch (e) {
-        console.error('WS Parse Error:', e);
-      }
-    };
+      };
 
-    ws.onerror = (err) => { console.error('WebSocket Error:', err); };
+      ws.onerror = (err) => {
+        console.warn('WebSocket connection warning:', err);
+      };
 
-    ws.onclose = () => {
-      if (wsStatus !== 'AUTHORIZED') {
-        setWsStatus((prev) => (prev === 'AUTHORIZED' ? 'AUTHORIZED' : 'DISCONNECTED'));
-      }
-    };
+      ws.onclose = () => {
+        if (!authorizedRef.current && wsStatus !== 'AUTHORIZED') {
+          setWsStatus((prev) => (prev === 'AUTHORIZED' ? 'AUTHORIZED' : 'WAITING'));
+        }
+      };
+    } catch (e) {
+      console.warn('Failed to establish WebSocket, relying on HTTP polling:', e);
+    }
   };
 
   useEffect(() => {
     initSession();
-    return () => {
-      if (wsRef.current) wsRef.current.close();
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
+    return () => cleanup();
   }, []);
 
   const formatTimer = (secs) => {

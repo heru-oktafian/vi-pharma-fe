@@ -30,6 +30,15 @@ export async function generateQRSession() {
   return data.data;
 }
 
+export async function checkQRSessionStatus(sessionId) {
+  const res = await fetch(`${API_BASE_URL}/auth/qr/status/${sessionId}`);
+  const data = await safeJson(res);
+  if (!res.ok || !data.success) {
+    throw new Error(data.message || 'Gagal memeriksa status sesi QR');
+  }
+  return data.data;
+}
+
 export async function selectBranch(sessionId, branchId) {
   const res = await fetch(`${API_BASE_URL}/auth/qr/select-branch`, {
     method: 'POST',
