@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
@@ -7,6 +8,14 @@ export default {
   theme: {
     extend: {
       colors: {
+        vimedika: {
+          green: '#709D89',
+          'green-dark': '#598370',
+          'green-light': '#EBF3F0',
+          orange: '#FBA220',
+          'orange-dark': '#E08C12',
+          'orange-light': '#FEF5E8',
+        },
         brand: {
           50: '#ecfdf5',
           100: '#d1fae5',

@@ -10,7 +10,7 @@
     overflow: hidden;
   }
   body {
-    @apply bg-slate-950 text-slate-100 antialiased;
+    @apply antialiased;
   }
 
   /* Custom sleek scrollbar for internal containers */
@@ -22,10 +22,10 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: rgba(148, 163, 184, 0.2);
+    background: rgba(148, 163, 184, 0.25);
     border-radius: 9999px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(148, 163, 184, 0.4);
+    background: rgba(148, 163, 184, 0.45);
   }
 }
