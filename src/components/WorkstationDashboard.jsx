@@ -1,22 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Building2, Pill, ShoppingCart, Package, FileText, 
-  BarChart3, LogOut, ArrowLeftRight, ShieldCheck, 
-  User, CheckCircle, ExternalLink 
+  BarChart3, LogOut, ArrowLeftRight, ShieldCheck 
 } from 'lucide-react';
 import { getBranchDetail } from '../services/api';
 
 export default function WorkstationDashboard({ user, branch, token, onSwitchBranch, onLogout }) {
   const [branchDetail, setBranchDetail] = useState(null);
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (branch?.id && token) {
-      setLoading(true);
       getBranchDetail(branch.id, token)
         .then((data) => setBranchDetail(data))
-        .catch((err) => console.error('Failed to load full branch detail:', err))
-        .finally(() => setLoading(false));
+        .catch((err) => console.error('Failed to load full branch detail:', err));
     }
   }, [branch?.id, token]);
 
@@ -64,40 +60,40 @@ export default function WorkstationDashboard({ user, branch, token, onSwitchBran
   ];
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
-      {/* Top Navbar */}
-      <header className="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50 px-6 py-3.5 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-xl shadow-inner">
+    <div className="h-screen h-dvh w-screen bg-slate-950 text-slate-100 flex flex-col overflow-hidden">
+      {/* Top Navbar (Compact - 52px) */}
+      <header className="h-[52px] shrink-0 border-b border-slate-800 bg-slate-900/90 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between z-20">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-lg shadow-inner">
             💊
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-lg font-bold text-white tracking-tight">Vi-Pharma</h1>
-              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                Workstation Aktif
+              <h1 className="text-sm sm:text-base font-bold text-white tracking-tight leading-none">Vi-Pharma</h1>
+              <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                Workstation
               </span>
             </div>
-            <div className="flex items-center gap-1.5 text-xs text-slate-400">
-              <Building2 className="w-3.5 h-3.5 text-emerald-400" />
-              <strong className="text-slate-200">{branch?.branch_name}</strong>
+            <div className="flex items-center gap-1 text-[11px] text-slate-400 leading-none mt-0.5">
+              <Building2 className="w-3 h-3 text-emerald-400 shrink-0" />
+              <strong className="text-slate-200 truncate max-w-[150px] sm:max-w-xs">{branch?.branch_name}</strong>
               <span className="font-mono text-slate-500">({branch?.branch_code})</span>
             </div>
           </div>
         </div>
 
         {/* User Info & Actions */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <div className="text-right hidden sm:block">
-            <span className="text-xs font-bold text-white block">{user?.name}</span>
-            <span className="text-[11px] font-mono text-emerald-400 uppercase font-semibold">
+            <span className="text-xs font-bold text-white block leading-tight">{user?.name}</span>
+            <span className="text-[10px] font-mono text-emerald-400 uppercase font-semibold">
               {user?.user_role}
             </span>
           </div>
 
           <button
             onClick={onSwitchBranch}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-semibold border border-slate-700 transition"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-medium border border-slate-700 transition"
             title="Ganti Cabang"
           >
             <ArrowLeftRight className="w-3.5 h-3.5" />
@@ -106,7 +102,7 @@ export default function WorkstationDashboard({ user, branch, token, onSwitchBran
 
           <button
             onClick={onLogout}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 text-xs font-semibold border border-red-500/20 transition"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 text-xs font-medium border border-red-500/20 transition"
             title="Keluar"
           >
             <LogOut className="w-3.5 h-3.5" />
@@ -115,74 +111,76 @@ export default function WorkstationDashboard({ user, branch, token, onSwitchBran
         </div>
       </header>
 
-      {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-6 md:p-8 space-y-6">
-        {/* Branch Info Banner */}
-        <div className="bg-gradient-to-r from-slate-900 to-slate-800/80 border border-slate-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            <div>
-              <div className="inline-flex items-center gap-2 text-xs font-bold text-emerald-400 uppercase tracking-wider mb-1">
-                <ShieldCheck className="w-4 h-4" /> Izin Resmi Apotek Terverifikasi
-              </div>
-              <h2 className="text-2xl font-black text-white">{branch?.branch_name}</h2>
-              <p className="text-xs text-slate-400 mt-1 max-w-2xl">{branch?.address}</p>
+      {/* Main Content Area (Strict 1-Screen Responsive) */}
+      <main className="flex-1 min-h-0 max-w-7xl w-full mx-auto p-3 sm:p-4 md:p-5 flex flex-col gap-3 overflow-hidden">
+        {/* Branch Info Banner (Compact Single Row on Desktop) */}
+        <div className="bg-gradient-to-r from-slate-900 to-slate-800/80 border border-slate-800 rounded-xl p-3 sm:p-3.5 shadow-md shrink-0 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+          <div>
+            <div className="inline-flex items-center gap-1.5 text-[10px] font-bold text-emerald-400 uppercase tracking-wider mb-0.5">
+              <ShieldCheck className="w-3.5 h-3.5" /> Izin Resmi Apotek Terverifikasi
             </div>
+            <h2 className="text-base sm:text-lg font-black text-white leading-tight">{branch?.branch_name}</h2>
+            <p className="text-[11px] text-slate-400 mt-0.5 max-w-2xl line-clamp-1">{branch?.address}</p>
+          </div>
 
-            {/* Quick Badges */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs bg-slate-950/60 p-3 rounded-xl border border-slate-800/80">
-              <div>
-                <span className="text-slate-500 block text-[10px] uppercase font-bold">No. SIA</span>
-                <span className="font-mono font-bold text-slate-200">{branchDetail?.sia_id || 'SIA-101/2026'}</span>
-              </div>
-              <div>
-                <span className="text-slate-500 block text-[10px] uppercase font-bold">Apoteker (SIPA)</span>
-                <span className="font-semibold text-slate-200 truncate block">{branchDetail?.sipa_name || 'apt. Hendra, S.Farm'}</span>
-              </div>
-              <div>
-                <span className="text-slate-500 block text-[10px] uppercase font-bold">Status Jurnal</span>
-                <span className="font-mono text-emerald-400 uppercase font-bold">{branchDetail?.journal_method || 'Perpetual'}</span>
-              </div>
+          {/* Quick Badges */}
+          <div className="grid grid-cols-3 gap-2 text-xs bg-slate-950/60 p-2 rounded-lg border border-slate-800/80 shrink-0">
+            <div>
+              <span className="text-slate-500 block text-[9px] uppercase font-bold">No. SIA</span>
+              <span className="font-mono text-xs font-bold text-slate-200">{branchDetail?.sia_id || 'SIA-101/2026'}</span>
+            </div>
+            <div>
+              <span className="text-slate-500 block text-[9px] uppercase font-bold">Apoteker (SIPA)</span>
+              <span className="font-semibold text-xs text-slate-200 truncate block">{branchDetail?.sipa_name || 'apt. Hendra, S.Farm'}</span>
+            </div>
+            <div>
+              <span className="text-slate-500 block text-[9px] uppercase font-bold">Status Jurnal</span>
+              <span className="font-mono text-xs text-emerald-400 uppercase font-bold">{branchDetail?.journal_method || 'Perpetual'}</span>
             </div>
           </div>
         </div>
 
-        {/* Division Modules Grid */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-bold text-white tracking-tight">Modul Operasional Cabang</h3>
-            <span className="text-xs text-slate-400">Hak akses otomatis disaring sesuai role <strong className="text-emerald-400 font-mono">{user?.user_role}</strong></span>
+        {/* Division Modules Grid (Fills remaining height, never pushes outside viewport) */}
+        <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+          <div className="flex items-center justify-between mb-2 shrink-0">
+            <h3 className="text-sm sm:text-base font-bold text-white tracking-tight">Modul Operasional Cabang</h3>
+            <span className="text-[11px] text-slate-400">
+              Role: <strong className="text-emerald-400 font-mono">{user?.user_role}</strong>
+            </span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="flex-1 min-h-0 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 overflow-y-auto pr-0.5">
             {modules.map((m, idx) => {
               const isAllowed = m.roleAccess.includes(user?.user_role || '');
               const Icon = m.icon;
               return (
                 <div
                   key={idx}
-                  className={`p-5 rounded-xl border transition-all ${
+                  className={`p-3.5 sm:p-4 rounded-xl border flex flex-col justify-between transition-all ${
                     isAllowed
-                      ? 'bg-slate-900/70 border-slate-800 hover:border-slate-700 hover:bg-slate-900 hover:shadow-xl cursor-pointer group'
+                      ? 'bg-slate-900/70 border-slate-800 hover:border-slate-700 hover:bg-slate-900 hover:shadow-lg cursor-pointer group'
                       : 'bg-slate-900/20 border-slate-800/40 opacity-50 cursor-not-allowed'
                   }`}
                 >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center border ${m.color} ${isAllowed ? 'group-hover:scale-105' : ''} transition`}>
-                      <Icon className="w-6 h-6" />
+                  <div>
+                    <div className="flex items-start justify-between mb-2">
+                      <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center border ${m.color} ${isAllowed ? 'group-hover:scale-105' : ''} transition shrink-0`}>
+                        <Icon className="w-5 h-5" />
+                      </div>
+                      <span className="text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">
+                        {m.badge}
+                      </span>
                     </div>
-                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">
-                      {m.badge}
-                    </span>
+
+                    <h4 className={`text-sm font-bold mb-1 leading-snug ${isAllowed ? 'text-white group-hover:text-emerald-300' : 'text-slate-400'}`}>
+                      {m.title}
+                    </h4>
+                    <p className="text-[11px] text-slate-400 leading-relaxed line-clamp-2">
+                      {m.desc}
+                    </p>
                   </div>
 
-                  <h4 className={`text-base font-bold mb-1 ${isAllowed ? 'text-white group-hover:text-emerald-300' : 'text-slate-400'}`}>
-                    {m.title}
-                  </h4>
-                  <p className="text-xs text-slate-400 leading-relaxed mb-4">
-                    {m.desc}
-                  </p>
-
-                  <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-semibold">
+                  <div className="pt-2.5 mt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] font-semibold">
                     {isAllowed ? (
                       <span className="text-emerald-400 flex items-center gap-1 group-hover:translate-x-0.5 transition">
                         Buka Modul →

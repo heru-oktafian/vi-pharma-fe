@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { RefreshCw, Smartphone, ShieldCheck, AlertCircle, Wifi, CheckCircle2 } from 'lucide-react';
+import { RefreshCw, Smartphone, ShieldCheck, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { generateQRSession, WS_BASE_URL } from '../services/api';
 
 export default function QRLoginCard({ onAuthorized }) {
@@ -110,99 +110,99 @@ export default function QRLoginCard({ onAuthorized }) {
   };
 
   return (
-    <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700/60 rounded-2xl shadow-2xl p-8 max-w-md w-full text-center relative overflow-hidden">
-      {/* Top Banner */}
-      <div className="mb-6">
-        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-emerald-500/10 text-emerald-400 mb-3 border border-emerald-500/20 shadow-inner">
-          <Smartphone className="w-7 h-7" />
+    <div className="bg-slate-800/85 backdrop-blur-xl border border-slate-700/60 rounded-2xl shadow-2xl p-5 sm:p-6 max-w-xs sm:max-w-sm w-full text-center relative overflow-hidden flex flex-col justify-between">
+      {/* Top Banner (Compact) */}
+      <div className="mb-3.5">
+        <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 mb-2 border border-emerald-500/20 shadow-inner">
+          <Smartphone className="w-5 h-5" />
         </div>
-        <h2 className="text-2xl font-bold text-white tracking-tight">Login dengan vi-token</h2>
-        <p className="text-sm text-slate-400 mt-1">
-          Buka aplikasi mobile <span className="text-emerald-400 font-semibold">vi-token</span> di ponsel Anda, lalu pindai kode QR di bawah ini.
+        <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">Login dengan vi-token</h2>
+        <p className="text-xs text-slate-400 mt-0.5 leading-snug">
+          Buka <span className="text-emerald-400 font-semibold">vi-token</span> di ponsel Anda, lalu pindai QR code berikut.
         </p>
       </div>
 
-      {/* QR Code Container */}
-      <div className="relative inline-block p-4 bg-white rounded-2xl shadow-xl transition-all duration-300">
+      {/* QR Code Container (Responsive & Fit) */}
+      <div className="relative inline-block p-2.5 sm:p-3 bg-white rounded-xl shadow-lg mx-auto">
         {loading ? (
-          <div className="w-56 h-56 flex flex-col items-center justify-center bg-slate-50 rounded-xl">
-            <RefreshCw className="w-8 h-8 text-emerald-600 animate-spin mb-2" />
-            <span className="text-xs text-slate-500 font-medium">Menghasilkan QR...</span>
+          <div className="w-44 h-44 flex flex-col items-center justify-center bg-slate-50 rounded-lg">
+            <RefreshCw className="w-7 h-7 text-emerald-600 animate-spin mb-1.5" />
+            <span className="text-xs text-slate-500 font-medium">Membuat QR...</span>
           </div>
         ) : error ? (
-          <div className="w-56 h-56 flex flex-col items-center justify-center bg-red-50 rounded-xl p-4 text-center">
-            <AlertCircle className="w-10 h-10 text-red-500 mb-2" />
-            <p className="text-xs text-red-600 font-medium">{error}</p>
+          <div className="w-44 h-44 flex flex-col items-center justify-center bg-red-50 rounded-lg p-2.5 text-center">
+            <AlertCircle className="w-8 h-8 text-red-500 mb-1" />
+            <p className="text-[11px] text-red-600 font-medium line-clamp-3 leading-tight">{error}</p>
             <button
               onClick={initSession}
-              className="mt-3 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5"
+              className="mt-2 px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white rounded-md text-[11px] font-semibold flex items-center gap-1 shadow-sm"
             >
-              <RefreshCw className="w-3.5 h-3.5" /> Coba Lagi
+              <RefreshCw className="w-3 h-3" /> Coba Lagi
             </button>
           </div>
         ) : secondsLeft <= 0 ? (
-          <div className="w-56 h-56 flex flex-col items-center justify-center bg-slate-100 rounded-xl p-4 text-center">
-            <AlertCircle className="w-10 h-10 text-amber-500 mb-2" />
-            <span className="text-sm font-semibold text-slate-700">QR Kedaluwarsa</span>
-            <p className="text-xs text-slate-500 mt-1 mb-3">Masa berlaku QR (120 detik) telah habis.</p>
+          <div className="w-44 h-44 flex flex-col items-center justify-center bg-slate-100 rounded-lg p-2.5 text-center">
+            <AlertCircle className="w-8 h-8 text-amber-500 mb-1" />
+            <span className="text-xs font-bold text-slate-700">QR Kedaluwarsa</span>
+            <p className="text-[10px] text-slate-500 mt-0.5 mb-2">Masa berlaku 120 detik habis.</p>
             <button
               onClick={initSession}
-              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-md"
+              className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-[11px] font-semibold flex items-center gap-1 shadow-sm"
             >
-              <RefreshCw className="w-3.5 h-3.5" /> Perbarui QR
+              <RefreshCw className="w-3 h-3" /> Perbarui QR
             </button>
           </div>
         ) : wsStatus === 'AUTHORIZED' ? (
-          <div className="w-56 h-56 flex flex-col items-center justify-center bg-emerald-50 rounded-xl p-4 text-center">
-            <CheckCircle2 className="w-12 h-12 text-emerald-500 animate-bounce mb-2" />
-            <span className="text-base font-bold text-emerald-800">Scan Berhasil!</span>
-            <span className="text-xs text-emerald-600 mt-1">Memuat daftar cabang...</span>
+          <div className="w-44 h-44 flex flex-col items-center justify-center bg-emerald-50 rounded-lg p-2.5 text-center">
+            <CheckCircle2 className="w-10 h-10 text-emerald-500 animate-bounce mb-1.5" />
+            <span className="text-sm font-bold text-emerald-800">Scan Berhasil!</span>
+            <span className="text-[11px] text-emerald-600 mt-0.5">Memuat cabang...</span>
           </div>
         ) : (
           <div className="relative">
             <QRCodeSVG
               value={session?.qr_string || ''}
-              size={224}
+              size={176}
               level="M"
               includeMargin={false}
-              className="rounded-lg"
+              className="rounded"
             />
             {/* Center Pill Icon */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-10 h-10 bg-white rounded-xl shadow-md flex items-center justify-center border border-slate-200">
-                <span className="text-xl">💊</span>
+              <div className="w-8 h-8 bg-white rounded-lg shadow flex items-center justify-center border border-slate-200">
+                <span className="text-base">💊</span>
               </div>
             </div>
           </div>
         )}
       </div>
 
-      {/* Status & Timer Footer */}
+      {/* Status & Timer Footer (Compact) */}
       {!loading && !error && secondsLeft > 0 && wsStatus !== 'AUTHORIZED' && (
-        <div className="mt-5 space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-700/60 border border-slate-600/50 text-xs">
-            <span className="relative flex h-2.5 w-2.5">
+        <div className="mt-3.5 space-y-1.5">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-700/60 border border-slate-600/50 text-[11px]">
+            <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
             </span>
-            <span className="text-slate-300 font-medium">Menunggu scan dari vi-token</span>
+            <span className="text-slate-300 font-medium">Menunggu scan vi-token</span>
           </div>
 
-          <div className="flex items-center justify-between text-xs text-slate-400 px-2">
-            <span>Berlaku: <strong className="text-amber-400">{formatTimer(secondsLeft)}</strong></span>
+          <div className="flex items-center justify-between text-[11px] text-slate-400 px-1">
+            <span>Berlaku: <strong className="text-amber-400 font-mono font-bold">{formatTimer(secondsLeft)}</strong></span>
             <button
               onClick={initSession}
-              className="text-slate-400 hover:text-emerald-400 flex items-center gap-1 transition"
+              className="text-slate-400 hover:text-emerald-400 flex items-center gap-1 transition text-[11px]"
             >
-              <RefreshCw className="w-3.5 h-3.5" /> Refresh Manual
+              <RefreshCw className="w-3 h-3" /> Refresh
             </button>
           </div>
         </div>
       )}
 
       {/* Security Footnote */}
-      <div className="mt-6 pt-5 border-t border-slate-700/60 flex items-center justify-center gap-2 text-xs text-slate-500">
-        <ShieldCheck className="w-4 h-4 text-emerald-400" />
+      <div className="mt-3.5 pt-2.5 border-t border-slate-700/60 flex items-center justify-center gap-1.5 text-[10px] text-slate-400">
+        <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
         <span>Terenkripsi End-to-End dengan JWT & WebSocket</span>
       </div>
     </div>

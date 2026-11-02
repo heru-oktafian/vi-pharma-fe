@@ -71,7 +71,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col justify-between selection:bg-emerald-500 selection:text-white">
+    <div className="h-screen h-dvh w-screen bg-slate-950 flex flex-col justify-between overflow-hidden selection:bg-emerald-500 selection:text-white">
       {step === 'WORKSTATION' ? (
         <WorkstationDashboard
           user={user}
@@ -81,27 +81,27 @@ export default function App() {
           onLogout={handleLogout}
         />
       ) : (
-        <div className="flex-1 flex flex-col items-center justify-center p-6 relative">
+        <div className="flex-1 flex flex-col items-center justify-between p-3 sm:p-5 relative overflow-hidden">
           {/* Background Ambient Glow */}
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute bottom-1/4 left-1/3 -translate-x-1/2 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-1/4 left-1/3 -translate-x-1/2 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
 
-          {/* App Header Branding */}
-          <div className="text-center mb-8 relative z-10">
-            <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-slate-900 border border-slate-800 shadow-lg mb-3">
-              <span className="text-xl">💊</span>
-              <span className="font-bold text-white text-base tracking-tight">Vi-Pharma System</span>
-              <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400">
+          {/* App Header Branding (Compact) */}
+          <div className="text-center relative z-10 shrink-0 mt-1 sm:mt-2">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-slate-900/90 border border-slate-800 shadow-md">
+              <span className="text-base">💊</span>
+              <span className="font-bold text-white text-sm tracking-tight">Vi-Pharma System</span>
+              <span className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">
                 v1.0
               </span>
             </div>
-            <p className="text-xs text-slate-400 max-w-sm mx-auto">
-              Sistem Informasi Manajemen Apotek & Jaringan Multi-Cabang Terintegrasi
+            <p className="text-[11px] text-slate-400 mt-1 max-w-xs mx-auto line-clamp-1">
+              Sistem Informasi Manajemen Apotek & Jaringan Multi-Cabang
             </p>
           </div>
 
-          {/* Main Card Switcher */}
-          <div className="relative z-10 w-full flex justify-center">
+          {/* Main Card Switcher (Centered & Scaled) */}
+          <div className="relative z-10 w-full flex-1 flex items-center justify-center min-h-0 my-auto py-2">
             {step === 'LOGIN' && (
               <QRLoginCard onAuthorized={handleAuthorized} />
             )}
@@ -117,8 +117,8 @@ export default function App() {
             )}
           </div>
 
-          {/* Footer */}
-          <footer className="mt-12 text-center text-xs text-slate-500 relative z-10">
+          {/* Compact Footer */}
+          <footer className="text-center text-[11px] text-slate-500 relative z-10 shrink-0 pb-1">
             © 2026 Vi-Pharma. Terhubung dengan Ekosistem <span className="text-slate-400">vi-token</span>.
           </footer>
         </div>
