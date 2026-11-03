@@ -23,19 +23,19 @@ export default function BranchSelector({ user, branches, sessionId, onBranchSele
     <div className={`border rounded-2xl p-4 sm:p-5 max-w-xl w-full max-h-[82vh] flex flex-col transition-all duration-200 ${
       isLight
         ? 'bg-white border-vip-navy-border shadow-lg text-slate-800'
-        : 'bg-slate-800/90 backdrop-blur-xl border-slate-700/60 shadow-2xl text-slate-100'
+        : 'bg-token-card border-token-border shadow-2xl text-slate-100'
     }`}>
       {/* Header */}
       <div className={`flex items-start justify-between border-b pb-3 mb-3 shrink-0 ${
-        isLight ? 'border-vip-navy-border' : 'border-slate-700/60'
+        isLight ? 'border-vip-navy-border' : 'border-token-border'
       }`}>
         <div>
           <div className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold mb-1 border ${
             isLight
               ? 'bg-vip-navy-light border-vip-navy-border text-vip-navy'
-              : 'bg-blue-500/10 border-blue-500/20 text-blue-300'
+              : 'bg-token-emerald/15 border-token-emerald/25 text-token-emerald'
           }`}>
-            <Sparkles className="w-3 h-3 text-vip-orange" /> Otorisasi Berhasil
+            <Sparkles className={`w-3 h-3 ${isLight ? 'text-vip-orange' : 'text-token-emerald'}`} /> Otorisasi Berhasil
           </div>
           <h2 className={`text-lg sm:text-xl font-bold tracking-tight leading-tight ${isLight ? 'text-vip-navy' : 'text-white'}`}>
             Pilih Cabang Apotek
@@ -49,7 +49,7 @@ export default function BranchSelector({ user, branches, sessionId, onBranchSele
           <span className={`inline-block mt-0.5 px-2 py-0.5 rounded font-mono text-[10px] font-bold border ${
             isLight
               ? 'bg-vip-navy-light text-vip-navy border-vip-navy-border'
-              : 'bg-slate-700 text-blue-300 border-slate-600'
+              : 'bg-token-inner text-token-emerald border-token-border'
           }`}>
             {user?.user_role}
           </span>
@@ -75,17 +75,17 @@ export default function BranchSelector({ user, branches, sessionId, onBranchSele
                   isSubmitting
                     ? isLight
                       ? 'bg-vip-navy-light border-vip-navy ring-2 ring-vip-navy/20'
-                      : 'bg-blue-950/40 border-blue-500 ring-2 ring-blue-500/30'
+                      : 'bg-token-inner border-token-emerald ring-2 ring-token-emerald/30'
                     : isLight
                       ? 'bg-white border-vip-navy-border hover:border-vip-orange hover:shadow-md'
-                      : 'bg-slate-900/60 border-slate-700/80 hover:border-blue-500/70 hover:bg-slate-900/90 hover:shadow-md'
+                      : 'bg-token-inner border-token-border hover:border-token-emerald/80 hover:bg-[#131d31] hover:shadow-md'
                 }`}
               >
                 {b.is_default && (
                   <span className={`absolute top-2.5 right-2.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold border ${
                     isLight
                       ? 'bg-vip-orange-light text-vip-orange border-vip-orange-border'
-                      : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                      : 'bg-token-emerald/15 text-token-emerald border-token-emerald/25'
                   }`}>
                     Utama
                   </span>
@@ -96,13 +96,13 @@ export default function BranchSelector({ user, branches, sessionId, onBranchSele
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center border group-hover:scale-105 transition shrink-0 ${
                       isLight
                         ? 'bg-vip-navy-light text-vip-navy border-vip-navy-border group-hover:bg-vip-orange-light group-hover:text-vip-orange group-hover:border-vip-orange-border'
-                        : 'bg-blue-500/10 text-blue-300 border-blue-500/20'
+                        : 'bg-token-emerald/15 text-token-emerald border-token-emerald/25'
                     }`}>
                       <Building2 className="w-4 h-4" />
                     </div>
                     <div className="min-w-0 pr-10">
                       <h3 className={`font-bold text-sm leading-tight truncate transition ${
-                        isLight ? 'text-slate-900 group-hover:text-vip-navy' : 'text-white group-hover:text-blue-300'
+                        isLight ? 'text-slate-900 group-hover:text-vip-navy' : 'text-white group-hover:text-token-emerald'
                       }`}>
                         {b.branch_name}
                       </h3>
@@ -111,7 +111,7 @@ export default function BranchSelector({ user, branches, sessionId, onBranchSele
                   </div>
 
                   <div className={`space-y-1 text-[11px] pt-2 border-t ${
-                    isLight ? 'text-slate-500 border-vip-navy-border/50' : 'text-slate-400 border-slate-800'
+                    isLight ? 'text-slate-500 border-vip-navy-border/50' : 'text-slate-400 border-token-border/60'
                   }`}>
                     <div className="flex items-start gap-1">
                       <MapPin className="w-3 h-3 text-slate-400 shrink-0 mt-0.5" />
@@ -127,7 +127,7 @@ export default function BranchSelector({ user, branches, sessionId, onBranchSele
                 </div>
 
                 <div className={`mt-3 pt-2 border-t flex items-center justify-between text-[11px] font-semibold ${
-                  isLight ? 'border-vip-navy-border/50 text-vip-navy group-hover:text-vip-orange' : 'border-slate-800/80 text-blue-300'
+                  isLight ? 'border-vip-navy-border/50 text-vip-navy group-hover:text-vip-orange' : 'border-token-border/60 text-token-emerald'
                 }`}>
                   <span>{isSubmitting ? 'Mengaktifkan...' : 'Buka Workstation'}</span>
                   <ArrowRight className={`w-3.5 h-3.5 transition-transform ${isSubmitting ? 'animate-pulse' : 'group-hover:translate-x-1'}`} />
@@ -137,7 +137,7 @@ export default function BranchSelector({ user, branches, sessionId, onBranchSele
           })
         ) : (
           <div className={`col-span-2 p-6 text-center rounded-xl border ${
-            isLight ? 'bg-vip-navy-light border-vip-navy-border' : 'bg-slate-900/40 border-slate-800'
+            isLight ? 'bg-vip-navy-light border-vip-navy-border' : 'bg-token-inner border-token-border'
           }`}>
             <p className="text-xs text-slate-400">User Anda belum ditautkan ke cabang mana pun.</p>
             <p className="text-[11px] text-slate-500 mt-0.5">Silakan hubungi Superadmin untuk penugasan cabang.</p>
@@ -147,11 +147,11 @@ export default function BranchSelector({ user, branches, sessionId, onBranchSele
 
       {/* Footer Cancel */}
       <div className={`mt-3 pt-2.5 border-t flex items-center justify-between shrink-0 ${
-        isLight ? 'border-vip-navy-border' : 'border-slate-700/60'
+        isLight ? 'border-vip-navy-border' : 'border-token-border'
       }`}>
         <button
           onClick={onCancel}
-          className={`text-xs transition ${isLight ? 'text-slate-500 hover:text-vip-navy' : 'text-slate-400 hover:text-white'}`}
+          className={`text-xs transition ${isLight ? 'text-slate-500 hover:text-vip-navy' : 'text-slate-400 hover:text-token-emerald'}`}
         >
           ← Kembali ke Login QR
         </button>

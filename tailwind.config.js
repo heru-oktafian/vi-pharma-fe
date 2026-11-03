@@ -21,7 +21,17 @@ export default {
           'orange-light':'#FFF3E8', // tint for bg
           'orange-border':'#FFD0AA',// border
         },
-        // Kept for dark-mode reuse
+        // Vi-Token dark palette — exact match with vi-token mobile app
+        token: {
+          bg:          '#090D16',   // deep obsidian dark background
+          card:        '#1E293B',   // card & container surface
+          inner:       '#0F172A',   // inner badge & input bg
+          border:      '#334155',   // subtle slate border
+          emerald:     '#10B981',   // primary brand green (CTA & active states)
+          'emerald-dark':'#059669', // hover state
+          'emerald-light':'#A7F3D0',// subtle highlight text
+        },
+        // Kept for clinical badge reuse
         clinical: {
           sage: '#4A7C6D',
           'sage-dark': '#345D51',

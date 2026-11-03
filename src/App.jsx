@@ -82,7 +82,7 @@ export default function App() {
 
   return (
     <div className={`h-screen h-dvh w-screen flex flex-col justify-between overflow-hidden transition-colors duration-200 ${
-      isLight ? 'bg-vip-navy-light text-slate-800' : 'bg-slate-950 text-slate-100'
+      isLight ? 'bg-vip-navy-light text-slate-800' : 'bg-token-bg text-slate-100'
     } selection:bg-vip-navy selection:text-white`}>
       {step === 'WORKSTATION' ? (
         <WorkstationDashboard
@@ -103,7 +103,7 @@ export default function App() {
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium shadow-xs transition-all duration-150 border ${
                 isLight
                   ? 'bg-white hover:bg-vip-orange-light text-slate-700 border-vip-navy-border hover:border-vip-orange hover:text-vip-orange'
-                  : 'bg-slate-900/90 hover:bg-slate-800 text-slate-200 border-slate-800 hover:border-slate-700'
+                  : 'bg-token-card hover:bg-slate-700 text-slate-200 border-token-border hover:border-token-emerald'
               }`}
               title="Ganti Tema Tampilan"
             >
@@ -121,11 +121,11 @@ export default function App() {
             </button>
           </div>
 
-          {/* Ambient Glows — Dark Mode only */}
+          {/* Ambient Glows — Dark Mode (Sleek Emerald & Slate) */}
           {!isLight && (
             <>
-              <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full blur-3xl pointer-events-none bg-blue-700/10" />
-              <div className="absolute bottom-1/4 left-1/3 -translate-x-1/2 w-72 h-72 rounded-full blur-3xl pointer-events-none bg-orange-600/10" />
+              <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full blur-3xl pointer-events-none bg-token-emerald/10" />
+              <div className="absolute bottom-1/4 left-1/3 -translate-x-1/2 w-72 h-72 rounded-full blur-3xl pointer-events-none bg-slate-800/20" />
             </>
           )}
 
@@ -138,15 +138,15 @@ export default function App() {
               onError={(e) => { e.target.style.display = 'none'; }}
             />
             <div className={`inline-flex items-center gap-2 mt-1.5 px-3 py-0.5 rounded-full shadow-xs border transition-colors ${
-              isLight ? 'bg-white/85 border-vip-navy-border text-slate-800' : 'bg-slate-900/90 border-slate-800 text-white'
+              isLight ? 'bg-white/85 border-vip-navy-border text-slate-800' : 'bg-token-card/90 border-token-border text-white'
             }`}>
               <span className={`font-semibold text-xs tracking-tight ${isLight ? 'text-vip-navy' : 'text-slate-200'}`}>
-                Vi-<span className="text-vip-orange">Pharma</span> Workstation
+                Vi-<span className={isLight ? 'text-vip-orange' : 'text-token-emerald font-bold'}>Pharma</span> Workstation
               </span>
               <span className={`text-[9px] uppercase font-bold px-1.5 py-0.2 rounded border ${
                 isLight
                   ? 'bg-vip-navy-light text-vip-navy border-vip-navy-border'
-                  : 'bg-blue-500/20 text-blue-300 border-blue-500/30'
+                  : 'bg-token-emerald/15 text-token-emerald border-token-emerald/25'
               }`}>
                 v1.0
               </span>
@@ -174,7 +174,7 @@ export default function App() {
           <footer className={`text-center text-[11px] relative z-10 shrink-0 pb-1 ${
             isLight ? 'text-slate-500' : 'text-slate-500'
           }`}>
-            © 2026 Vi-Pharma — <span className={isLight ? 'text-vip-navy font-semibold' : 'text-slate-400'}>Apotek Sistem Informasi</span>
+            © 2026 Vi-Pharma — <span className={isLight ? 'text-vip-navy font-semibold' : 'text-token-emerald font-semibold'}>Apotek Sistem Informasi</span>
           </footer>
         </div>
       )}
