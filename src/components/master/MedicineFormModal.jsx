@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Plus, Trash2, ShieldCheck, Pill, Layers, DollarSign, AlertCircle } from 'lucide-react';
+import { X, Plus, Trash2, ShieldCheck, Pill, Layers, DollarSign, AlertCircle, Clock, Tag } from 'lucide-react';
 import { CLASSIFICATIONS } from './ClassificationBadge';
 import { createMedicine, updateMedicine } from '../../services/masterDataApi';
 
@@ -23,7 +23,7 @@ export default function MedicineFormModal({
   if (!isOpen) return null;
 
   const isLight = theme === 'light';
-  const [activeTab, setActiveTab] = useState('BASIC'); // 'BASIC' | 'UNITS' | 'PRICES'
+  const [activeTab, setActiveTab] = useState('BASIC'); // 'BASIC' | 'UNITS' | 'PRICES' | 'ETIKET'
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -45,6 +45,16 @@ export default function MedicineFormModal({
     max_stock: 1000,
     storage_location: 'Rak A-1',
     is_active: true,
+    // Etiket & Aturan Pakai
+    label_type: 'dalam',
+    default_signa: '3 x Sehari 1 Tablet',
+    consumption_time: 'Sesudah Makan',
+    dose_morning: '1',
+    dose_noon: '1',
+    dose_night: '1',
+    warning_tags: '',
+    special_instructions: '',
+    bud_days: 0,
   });
 
   // Dynamic Units & Prices
@@ -71,6 +81,15 @@ export default function MedicineFormModal({
         max_stock: editingItem.max_stock ?? 1000,
         storage_location: editingItem.storage_location || '',
         is_active: editingItem.is_active ?? true,
+        label_type: editingItem.label_type || 'dalam',
+        default_signa: editingItem.default_signa || '3 x Sehari 1 Tablet',
+        consumption_time: editingItem.consumption_time || 'Sesudah Makan',
+        dose_morning: editingItem.dose_morning || '1',
+        dose_noon: editingItem.dose_noon || '1',
+        dose_night: editingItem.dose_night || '1',
+        warning_tags: editingItem.warning_tags || '',
+        special_instructions: editingItem.special_instructions || '',
+        bud_days: editingItem.bud_days ?? 0,
       });
 
       if (editingItem.units && editingItem.units.length > 0) {
@@ -117,6 +136,15 @@ export default function MedicineFormModal({
         max_stock: 1000,
         storage_location: 'Rak A-1',
         is_active: true,
+        label_type: 'dalam',
+        default_signa: '3 x Sehari 1 Tablet',
+        consumption_time: 'Sesudah Makan',
+        dose_morning: '1',
+        dose_noon: '1',
+        dose_night: '1',
+        warning_tags: '',
+        special_instructions: '',
+        bud_days: 0,
       });
 
       if (defaultUnit) {
@@ -240,6 +268,15 @@ export default function MedicineFormModal({
         storage_location: form.storage_location.trim(),
         default_supplier_id: form.default_supplier_id ? form.default_supplier_id : null,
         is_active: Boolean(form.is_active),
+        label_type: form.label_type || 'dalam',
+        default_signa: form.default_signa?.trim() || '3 x Sehari 1 Tablet',
+        consumption_time: form.consumption_time?.trim() || 'Sesudah Makan',
+        dose_morning: form.dose_morning || '1',
+        dose_noon: form.dose_noon || '1',
+        dose_night: form.dose_night || '1',
+        warning_tags: form.warning_tags?.trim() || '',
+        special_instructions: form.special_instructions?.trim() || '',
+        bud_days: Number(form.bud_days) || 0,
         units: medicineUnits.map((u) => ({
           unit_id: u.unit_id,
           conversion_factor: Number(u.conversion_factor) || 1,
@@ -292,13 +329,13 @@ export default function MedicineFormModal({
         </div>
 
         {/* Tab Buttons */}
-        <div className={`px-5 pt-2 border-b flex gap-2 shrink-0 ${
+        <div className={`px-5 pt-2 border-b flex gap-2 shrink-0 overflow-x-auto ${
           isLight ? 'bg-slate-50 border-slate-200' : 'bg-token-card/80 border-token-border'
         }`}>
           <button
             type="button"
             onClick={() => setActiveTab('BASIC')}
-            className={`px-3 py-1.5 text-xs font-bold border-b-2 flex items-center gap-1.5 transition ${
+            className={`px-3 py-1.5 text-xs font-bold border-b-2 flex items-center gap-1.5 transition whitespace-nowrap ${
               activeTab === 'BASIC'
                 ? isLight
                   ? 'border-vip-navy text-vip-navy'
@@ -313,7 +350,7 @@ export default function MedicineFormModal({
           <button
             type="button"
             onClick={() => setActiveTab('UNITS')}
-            className={`px-3 py-1.5 text-xs font-bold border-b-2 flex items-center gap-1.5 transition ${
+            className={`px-3 py-1.5 text-xs font-bold border-b-2 flex items-center gap-1.5 transition whitespace-nowrap ${
               activeTab === 'UNITS'
                 ? isLight
                   ? 'border-vip-navy text-vip-navy'
@@ -322,13 +359,13 @@ export default function MedicineFormModal({
             }`}
           >
             <Layers className="w-3.5 h-3.5" />
-            <span>2. Kemasan Satuan Bertingkat ({medicineUnits.length})</span>
+            <span>2. Kemasan Bertingkat ({medicineUnits.length})</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('PRICES')}
-            className={`px-3 py-1.5 text-xs font-bold border-b-2 flex items-center gap-1.5 transition ${
+            className={`px-3 py-1.5 text-xs font-bold border-b-2 flex items-center gap-1.5 transition whitespace-nowrap ${
               activeTab === 'PRICES'
                 ? isLight
                   ? 'border-vip-navy text-vip-navy'
@@ -337,7 +374,22 @@ export default function MedicineFormModal({
             }`}
           >
             <DollarSign className="w-3.5 h-3.5" />
-            <span>3. Struktur Harga Jual ({medicinePrices.length})</span>
+            <span>3. Struktur Harga ({medicinePrices.length})</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('ETIKET')}
+            className={`px-3 py-1.5 text-xs font-bold border-b-2 flex items-center gap-1.5 transition whitespace-nowrap ${
+              activeTab === 'ETIKET'
+                ? isLight
+                  ? 'border-vip-navy text-vip-navy'
+                  : 'border-token-emerald text-token-emerald'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Tag className="w-3.5 h-3.5" />
+            <span>4. Standar Etiket & Aturan Pakai</span>
           </button>
         </div>
 
@@ -810,7 +862,6 @@ export default function MedicineFormModal({
                               isLight ? 'bg-white border-slate-300' : 'bg-token-card border-token-border text-slate-100'
                             }`}
                           >
-                            {/* Offer from configured medicineUnits if available, or all units */}
                             {(medicineUnits.length > 0
                               ? units.filter((u) => medicineUnits.some((mu) => mu.unit_id === u.id))
                               : units
@@ -869,6 +920,258 @@ export default function MedicineFormModal({
                     )}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 4: STANDAR ETIKET & ATURAN PAKAI */}
+          {activeTab === 'ETIKET' && (
+            <div className="space-y-3.5 animate-fadeIn">
+              <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-xs flex items-start gap-2.5 text-blue-400">
+                <Tag className="w-4 h-4 mt-0.5 shrink-0" />
+                <div>
+                  <strong className="block text-blue-300">Konfigurasi Aturan Pakai & Etiket Resmi</strong>
+                  Data ini otomatis terpanggil sebagai template saat apotek mencetak <strong>Print Etiket</strong> (stiker satuan) maupun <strong>Print Etiket Group</strong> (jadwal terpadu) pada saat penyerahan obat ke pasien.
+                </div>
+              </div>
+
+              {/* Tipe Etiket Radio Cards */}
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider mb-1.5 text-slate-400">
+                  Tipe Etiket & Sediaan <span className="text-red-500">*</span>
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <div
+                    onClick={() => setForm({ ...form, label_type: 'dalam' })}
+                    className={`p-3 rounded-xl border flex items-center gap-3 cursor-pointer transition ${
+                      form.label_type === 'dalam'
+                        ? isLight
+                          ? 'bg-slate-100 border-slate-900 shadow-xs'
+                          : 'bg-token-inner border-slate-300 text-white shadow-xs'
+                        : isLight
+                          ? 'bg-white border-slate-200 text-slate-600'
+                          : 'bg-token-card border-token-border text-slate-400'
+                    }`}
+                  >
+                    <div className="w-4 h-4 rounded-full border-2 border-slate-700 bg-white flex items-center justify-center shrink-0">
+                      {form.label_type === 'dalam' && <div className="w-2 h-2 rounded-full bg-slate-900" />}
+                    </div>
+                    <div>
+                      <div className="font-bold text-xs text-slate-900 dark:text-white">Etiket Putih (Obat Dalam)</div>
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400">Obat oral: Tablet, Kapsul, Kaplet, Sirup, Puyer</span>
+                    </div>
+                  </div>
+
+                  <div
+                    onClick={() => setForm({ ...form, label_type: 'luar' })}
+                    className={`p-3 rounded-xl border flex items-center gap-3 cursor-pointer transition ${
+                      form.label_type === 'luar'
+                        ? 'bg-blue-500/15 border-blue-500 text-blue-400 shadow-xs'
+                        : isLight
+                          ? 'bg-white border-slate-200 text-slate-600'
+                          : 'bg-token-card border-token-border text-slate-400'
+                    }`}
+                  >
+                    <div className="w-4 h-4 rounded-full border-2 border-blue-500 bg-blue-600/30 flex items-center justify-center shrink-0">
+                      {form.label_type === 'luar' && <div className="w-2 h-2 rounded-full bg-blue-400" />}
+                    </div>
+                    <div>
+                      <div className="font-bold text-xs text-blue-400">Etiket Biru (Obat Luar)</div>
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400">Salep, Krim, Tetes Mata, Injeksi, Suppositoria</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Aturan Pakai Baku (Signa) with Suggestion Chips */}
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider mb-1 text-slate-400">
+                  Aturan Pakai Standar (Signa Bawaan)
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. 3 x Sehari 1 Tablet"
+                  value={form.default_signa}
+                  onChange={(e) => setForm({ ...form, default_signa: e.target.value })}
+                  className={`w-full px-3 py-1.5 rounded-lg text-xs font-bold border outline-hidden transition ${
+                    isLight
+                      ? 'bg-slate-50 border-vip-navy-border text-slate-900 focus:border-vip-navy'
+                      : 'bg-token-inner border-token-border text-slate-100 focus:border-token-emerald'
+                  }`}
+                />
+                <div className="flex items-center gap-1 mt-1.5 flex-wrap">
+                  <span className="text-[10px] text-slate-400">Template Cepat:</span>
+                  {[
+                    '3 x Sehari 1 Tablet',
+                    '2 x Sehari 1 Tablet',
+                    '1 x Sehari 1 Tablet',
+                    '1 x Sehari Malam Hari',
+                    'Tiap 8 Jam 1 Kaplet',
+                    '3 x Sehari 1 Sendok Takar (5ml)',
+                    'Oleskan Tipis 2 x Sehari',
+                  ].map((chip) => (
+                    <button
+                      key={chip}
+                      type="button"
+                      onClick={() => setForm({ ...form, default_signa: chip })}
+                      className="text-[10px] px-2 py-0.5 rounded border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-token-inner hover:bg-slate-200 dark:hover:bg-slate-700 transition"
+                    >
+                      {chip}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Waktu Konsumsi & Matriks Jadwal Minum */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider mb-1 text-slate-400">
+                    Waktu Konsumsi Obat
+                  </label>
+                  <select
+                    value={form.consumption_time}
+                    onChange={(e) => setForm({ ...form, consumption_time: e.target.value })}
+                    className={`w-full px-3 py-1.5 rounded-lg text-xs border outline-hidden transition ${
+                      isLight
+                        ? 'bg-slate-50 border-vip-navy-border text-slate-900 focus:border-vip-navy'
+                        : 'bg-token-inner border-token-border text-slate-100 focus:border-token-emerald'
+                    }`}
+                  >
+                    <option value="Sesudah Makan">Sesudah Makan (p.c)</option>
+                    <option value="Sebelum Makan">Sebelum Makan (a.c - 1 jam sebelum)</option>
+                    <option value="Bersama Makan">Bersama Makan (d.c)</option>
+                    <option value="Sebelum Tidur">Malam Hari Sebelum Tidur</option>
+                    <option value="Bila Perlu / Demam">Bila Perlu / Bila Sakit (p.r.n)</option>
+                    <option value="Pagi Hari Saja">Pagi Hari Saja</option>
+                    <option value="Bebas Waktu">Kapan Saja</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider mb-1 text-slate-400">
+                    Masa Simpan Setelah Dibuka (BUD)
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      min="0"
+                      value={form.bud_days}
+                      onChange={(e) => setForm({ ...form, bud_days: e.target.value })}
+                      className={`w-24 px-3 py-1.5 rounded-lg text-xs font-mono border outline-hidden transition ${
+                        isLight
+                          ? 'bg-slate-50 border-vip-navy-border text-slate-900 focus:border-vip-navy'
+                          : 'bg-token-inner border-token-border text-slate-100 focus:border-token-emerald'
+                      }`}
+                    />
+                    <span className="text-xs text-slate-400">
+                      Hari ({form.bud_days > 0 ? `${form.bud_days} hari setelah segel dibuka` : '0 = Sesuai ED Pabrik'})
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Matriks Jadwal Minum (Pagi, Siang, Malam) */}
+              <div className={`p-3 rounded-xl border ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-token-inner border-token-border'}`}>
+                <label className="block text-[11px] font-bold uppercase tracking-wider mb-2 text-slate-400">
+                  Matriks Dosis Jadwal Harian (Untuk Etiket Group)
+                </label>
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <span className="text-[10px] font-bold text-amber-500 block mb-1">☀️ Dosis Pagi</span>
+                    <input
+                      type="text"
+                      placeholder="e.g. 1 / 5ml"
+                      value={form.dose_morning}
+                      onChange={(e) => setForm({ ...form, dose_morning: e.target.value })}
+                      className={`w-full px-2.5 py-1 rounded text-xs text-center font-bold border outline-hidden ${
+                        isLight ? 'bg-white border-slate-300' : 'bg-token-card border-token-border text-slate-100'
+                      }`}
+                    />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-orange-400 block mb-1">🌤️ Dosis Siang</span>
+                    <input
+                      type="text"
+                      placeholder="e.g. 1 / -"
+                      value={form.dose_noon}
+                      onChange={(e) => setForm({ ...form, dose_noon: e.target.value })}
+                      className={`w-full px-2.5 py-1 rounded text-xs text-center font-bold border outline-hidden ${
+                        isLight ? 'bg-white border-slate-300' : 'bg-token-card border-token-border text-slate-100'
+                      }`}
+                    />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-blue-400 block mb-1">🌙 Dosis Malam</span>
+                    <input
+                      type="text"
+                      placeholder="e.g. 1 / 5ml"
+                      value={form.dose_night}
+                      onChange={(e) => setForm({ ...form, dose_night: e.target.value })}
+                      className={`w-full px-2.5 py-1 rounded text-xs text-center font-bold border outline-hidden ${
+                        isLight ? 'bg-white border-slate-300' : 'bg-token-card border-token-border text-slate-100'
+                      }`}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Warning Tags Checkbox Buttons */}
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider mb-1.5 text-slate-400">
+                  Label Peringatan Khusus (*Auxiliary Labels*)
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    'Harus Dihabiskan (Antibiotik)',
+                    'Kocok Dahulu',
+                    'Menyebabkan Kantuk',
+                    'Simpan di Lemari Pendingin (2-8°C)',
+                    'Obat Luar - Tidak Boleh Ditelan',
+                    'Hentikan Jika Demam Reda',
+                    'Hati-hati Penggunaan Jangka Panjang',
+                  ].map((tagText) => {
+                    const currentTags = (form.warning_tags || '').split(',').map((t) => t.trim()).filter(Boolean);
+                    const isChecked = currentTags.includes(tagText);
+                    return (
+                      <button
+                        key={tagText}
+                        type="button"
+                        onClick={() => {
+                          const updated = isChecked
+                            ? currentTags.filter((t) => t !== tagText)
+                            : [...currentTags, tagText];
+                          setForm({ ...form, warning_tags: updated.join(', ') });
+                        }}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition ${
+                          isChecked
+                            ? 'bg-red-500/15 border-red-500 text-red-400 font-bold'
+                            : 'border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-200'
+                        }`}
+                      >
+                        {isChecked ? '✓ ' : '+ '}
+                        {tagText}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Special Instructions Textarea */}
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider mb-1 text-slate-400">
+                  Petunjuk Khusus & Informasi Tambahan untuk Pasien
+                </label>
+                <textarea
+                  rows={2}
+                  placeholder="e.g. Larutkan dalam 1 gelas air, cuci tangan sebelum dan sesudah penggunaan..."
+                  value={form.special_instructions}
+                  onChange={(e) => setForm({ ...form, special_instructions: e.target.value })}
+                  className={`w-full px-3 py-1.5 rounded-lg text-xs border outline-hidden transition ${
+                    isLight
+                      ? 'bg-slate-50 border-vip-navy-border text-slate-900 focus:border-vip-navy'
+                      : 'bg-token-inner border-token-border text-slate-100 focus:border-token-emerald'
+                  }`}
+                />
               </div>
             </div>
           )}

@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import {
   Plus, Search, Eye, Edit2, Trash2, CheckCircle2, XCircle,
-  AlertCircle, RefreshCw, Filter, Layers, DollarSign, Tag, Pill, AlertTriangle
+  AlertCircle, RefreshCw, Filter, Layers, DollarSign, Tag, Pill,
+  AlertTriangle, Printer, FileText
 } from 'lucide-react';
 import ClassificationBadge, { CLASSIFICATIONS } from './ClassificationBadge';
 import MedicineDetailModal from './MedicineDetailModal';
 import MedicineFormModal from './MedicineFormModal';
+import EtiketPrintPreviewModal from './EtiketPrintPreviewModal';
 import { getMedicines, getMedicineById, deleteMedicine, getUnits, getCategories, getSuppliers } from '../../services/masterDataApi';
 
-export default function MedicinesView({ token, userRole, theme = 'dark' }) {
+export default function MedicinesView({ token, userRole, theme = 'dark', branch }) {
   const [medicines, setMedicines] = useState([]);
   const [loading, setLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
@@ -30,6 +32,11 @@ export default function MedicinesView({ token, userRole, theme = 'dark' }) {
   const [selectedMedicine, setSelectedMedicine] = useState(null);
   const [formModalOpen, setFormModalOpen] = useState(false);
   const [editingMedicine, setEditingMedicine] = useState(null);
+
+  // Print Etiket Simulation Modal
+  const [etiketModalOpen, setEtiketModalOpen] = useState(false);
+  const [etiketPrintTarget, setEtiketPrintTarget] = useState(null);
+  const [etiketPrintMode, setEtiketPrintMode] = useState('single');
 
   // Notifications
   const [alert, setAlert] = useState(null);
@@ -120,6 +127,19 @@ export default function MedicinesView({ token, userRole, theme = 'dark' }) {
       setEditingMedicine(item);
       setFormModalOpen(true);
     }
+  };
+
+  // Open Print Simulation
+  const handleOpenPrintSingle = (item) => {
+    setEtiketPrintTarget(item);
+    setEtiketPrintMode('single');
+    setEtiketModalOpen(true);
+  };
+
+  const handleOpenPrintGroup = () => {
+    setEtiketPrintTarget(medicines[0] || null);
+    setEtiketPrintMode('group');
+    setEtiketModalOpen(true);
   };
 
   // Delete
@@ -237,6 +257,21 @@ export default function MedicinesView({ token, userRole, theme = 'dark' }) {
             ))}
           </select>
 
+          {/* Print Group Simulation Button */}
+          <button
+            onClick={handleOpenPrintGroup}
+            disabled={medicines.length === 0}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition ${
+              isLight
+                ? 'bg-white hover:bg-vip-navy-light text-vip-navy border-vip-navy-border'
+                : 'bg-token-inner hover:bg-slate-700 text-slate-200 border-token-border hover:border-token-emerald'
+            }`}
+            title="Simulasi Print Etiket Group (Jadwal Terpadu)"
+          >
+            <Printer className="w-3.5 h-3.5 text-vip-orange" />
+            <span className="hidden sm:inline">Print Etiket Group</span>
+          </button>
+
           <button
             onClick={fetchMedicinesList}
             disabled={loading}
@@ -276,7 +311,7 @@ export default function MedicinesView({ token, userRole, theme = 'dark' }) {
               isLight ? 'bg-vip-navy-light text-vip-navy border-vip-navy-border' : 'bg-token-inner text-slate-300 border-token-border'
             }`}>
               <tr>
-                <th className="py-2.5 px-3.5">Obat & Golongan BPOM</th>
+                <th className="py-2.5 px-3.5">Obat & Aturan Pakai</th>
                 <th className="py-2.5 px-3.5">Identifikasi (Kode/Barcode)</th>
                 <th className="py-2.5 px-3.5">Sediaan & Kategori</th>
                 <th className="py-2.5 px-3.5">Kemasan & Konversi</th>
@@ -304,6 +339,7 @@ export default function MedicinesView({ token, userRole, theme = 'dark' }) {
               ) : (
                 medicines.map((item) => {
                   const defaultPrice = item.prices?.find((p) => p.price_type === 'umum') || item.prices?.[0];
+                  const isObatLuar = (item.label_type || '').toLowerCase() === 'luar';
                   return (
                     <tr
                       key={item.id}
@@ -311,7 +347,7 @@ export default function MedicinesView({ token, userRole, theme = 'dark' }) {
                         isLight ? 'hover:bg-slate-50' : 'hover:bg-slate-800/40'
                       }`}
                     >
-                      {/* Name & Classification Badge */}
+                      {/* Name, Classification Badge & Etiket Indicator */}
                       <td className="py-2.5 px-3.5 max-w-xs">
                         <div className="flex items-start gap-2">
                           <div className="pt-0.5">
@@ -331,6 +367,21 @@ export default function MedicinesView({ token, userRole, theme = 'dark' }) {
                                 {item.generic_name}
                               </span>
                             )}
+                            {/* Etiket & Signa Badge */}
+                            <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                              <span className={`px-1.5 py-0.2 rounded text-[9px] font-bold uppercase border ${
+                                isObatLuar
+                                  ? 'bg-blue-500/15 text-blue-400 border-blue-500/30'
+                                  : 'bg-slate-500/15 text-slate-300 border-slate-500/30'
+                              }`}>
+                                {isObatLuar ? 'Etiket Biru' : 'Etiket Putih'}
+                              </span>
+                              {item.default_signa && (
+                                <span className="text-[10px] text-slate-400 font-medium">
+                                  • {item.default_signa}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </td>
@@ -410,13 +461,25 @@ export default function MedicinesView({ token, userRole, theme = 'dark' }) {
                       {/* Action buttons */}
                       <td className="py-2.5 px-3.5 text-right">
                         <div className="flex items-center justify-end gap-1">
+                          {/* Print Etiket Action */}
+                          <button
+                            onClick={() => handleOpenPrintSingle(item)}
+                            className={`p-1 rounded text-slate-400 hover:bg-slate-500/10 transition ${
+                              isObatLuar ? 'hover:text-blue-400' : 'hover:text-emerald-400'
+                            }`}
+                            title="Simulasi Print Etiket Bawaan"
+                          >
+                            <Printer className="w-3.5 h-3.5" />
+                          </button>
+
                           <button
                             onClick={() => handleOpenDetail(item)}
                             className="p-1 rounded text-slate-400 hover:text-cyan-400 hover:bg-slate-500/10 transition"
-                            title="Lihat Detail & Konversi"
+                            title="Lihat Detail & Aturan Pakai"
                           >
                             <Eye className="w-3.5 h-3.5" />
                           </button>
+
                           {canEdit && (
                             <button
                               onClick={() => handleOpenEdit(item)}
@@ -426,6 +489,7 @@ export default function MedicinesView({ token, userRole, theme = 'dark' }) {
                               <Edit2 className="w-3.5 h-3.5" />
                             </button>
                           )}
+
                           {canDelete && (
                             <button
                               onClick={() => handleDelete(item)}
@@ -453,7 +517,7 @@ export default function MedicinesView({ token, userRole, theme = 'dark' }) {
             Menampilkan <strong>{medicines.length}</strong> item dari total <strong>{totalCount}</strong> katalog terdaftar
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[10px] uppercase font-bold text-slate-400">Vi-Pharma Drug Formulary</span>
+            <span className="text-[10px] uppercase font-bold text-slate-400">Vi-Pharma Drug Formulary & Etiket Label</span>
           </div>
         </div>
       </div>
@@ -463,6 +527,7 @@ export default function MedicinesView({ token, userRole, theme = 'dark' }) {
         medicine={selectedMedicine}
         isOpen={detailModalOpen}
         onClose={() => setDetailModalOpen(false)}
+        onOpenPrint={(med) => handleOpenPrintSingle(med)}
         theme={theme}
       />
 
@@ -480,6 +545,16 @@ export default function MedicinesView({ token, userRole, theme = 'dark' }) {
         units={units}
         categories={categories}
         suppliers={suppliers}
+        theme={theme}
+      />
+
+      {/* Print Etiket Simulation Modal */}
+      <EtiketPrintPreviewModal
+        isOpen={etiketModalOpen}
+        onClose={() => setEtiketModalOpen(false)}
+        medicine={etiketPrintTarget}
+        medicinesList={medicines}
+        branch={branch}
         theme={theme}
       />
     </div>

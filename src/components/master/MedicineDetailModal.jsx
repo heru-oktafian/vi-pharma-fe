@@ -1,8 +1,8 @@
 import React from 'react';
-import { X, Pill, ShieldCheck, MapPin, Package, Building2, Tag, Layers, DollarSign, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { X, Pill, ShieldCheck, MapPin, Package, Building2, Tag, Layers, DollarSign, AlertTriangle, CheckCircle2, Printer, Clock } from 'lucide-react';
 import ClassificationBadge from './ClassificationBadge';
 
-export default function MedicineDetailModal({ medicine, isOpen, onClose, theme = 'dark' }) {
+export default function MedicineDetailModal({ medicine, isOpen, onClose, onOpenPrint, theme = 'dark' }) {
   if (!isOpen || !medicine) return null;
 
   const isLight = theme === 'light';
@@ -15,6 +15,8 @@ export default function MedicineDetailModal({ medicine, isOpen, onClose, theme =
       maximumFractionDigits: 0
     }).format(val || 0);
   };
+
+  const isObatLuar = (medicine.label_type || '').toLowerCase() === 'luar';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
@@ -34,6 +36,13 @@ export default function MedicineDetailModal({ medicine, isOpen, onClose, theme =
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <ClassificationBadge classification={medicine.drug_classification} size="sm" />
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                  isObatLuar
+                    ? 'bg-blue-500/15 text-blue-400 border-blue-500/30'
+                    : 'bg-slate-500/15 text-slate-300 border-slate-500/30'
+                }`}>
+                  {isObatLuar ? 'Etiket Biru (Obat Luar)' : 'Etiket Putih (Obat Dalam)'}
+                </span>
                 {medicine.requires_prescription && (
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-500 border border-amber-500/30">
                     Wajib Resep Dokter
@@ -90,6 +99,65 @@ export default function MedicineDetailModal({ medicine, isOpen, onClose, theme =
               <span className="text-[10px] uppercase font-bold text-slate-400 block">Kategori Terapi</span>
               <span className="font-semibold text-slate-700 dark:text-slate-200">{medicine.category?.name || '-'}</span>
             </div>
+          </div>
+
+          {/* Standar Etiket & Aturan Pakai Pasien */}
+          <div className={`p-3.5 rounded-xl border space-y-2.5 ${
+            isObatLuar
+              ? 'bg-blue-500/5 border-blue-500/30'
+              : isLight ? 'bg-white border-slate-200' : 'bg-token-card/60 border-token-border'
+          }`}>
+            <div className="flex items-center justify-between">
+              <h4 className="font-bold uppercase tracking-wider text-[11px] text-slate-400 flex items-center gap-1.5">
+                <Tag className="w-3.5 h-3.5 text-token-emerald" /> Standar Etiket & Aturan Pakai Pasien
+              </h4>
+              <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                isObatLuar ? 'bg-blue-500 text-white' : 'bg-slate-800 text-white dark:bg-white dark:text-slate-900'
+              }`}>
+                {isObatLuar ? 'Obat Luar (Biru)' : 'Obat Dalam (Putih)'}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 text-xs">
+              <div>
+                <span className="text-slate-400 block text-[10px]">Aturan Pakai Standar (Signa):</span>
+                <span className="font-bold text-slate-900 dark:text-token-emerald text-sm">
+                  {medicine.default_signa || '3 x Sehari 1 Tablet'}
+                </span>
+              </div>
+              <div>
+                <span className="text-slate-400 block text-[10px]">Waktu Minum / Konsumsi:</span>
+                <span className="font-semibold text-amber-500">
+                  {medicine.consumption_time || 'Sesudah Makan'}
+                </span>
+              </div>
+            </div>
+
+            {/* Matriks Jadwal */}
+            <div className={`p-2 rounded-lg border text-[11px] ${
+              isLight ? 'bg-slate-50 border-slate-200' : 'bg-token-inner border-token-border'
+            }`}>
+              <span className="text-[10px] font-bold uppercase text-slate-400 block mb-1">
+                Jadwal Minum Harian (Etiket Group):
+              </span>
+              <div className="flex items-center gap-4">
+                <span>☀️ Pagi: <strong>{medicine.dose_morning || '1'}</strong></span>
+                <span>🌤️ Siang: <strong>{medicine.dose_noon || '1'}</strong></span>
+                <span>🌙 Malam: <strong>{medicine.dose_night || '1'}</strong></span>
+              </div>
+            </div>
+
+            {medicine.warning_tags && (
+              <div className="text-[10px] font-bold text-red-500 bg-red-500/10 p-1.5 rounded border border-red-500/20">
+                Peringatan: {medicine.warning_tags}
+              </div>
+            )}
+
+            {medicine.special_instructions && (
+              <p className="text-[11px] text-slate-400 italic">
+                * Petunjuk khusus: {medicine.special_instructions}
+              </p>
+            )}
           </div>
 
           {/* Regulatory & Distributor Information */}
@@ -252,9 +320,29 @@ export default function MedicineDetailModal({ medicine, isOpen, onClose, theme =
         </div>
 
         {/* Footer */}
-        <div className={`p-3.5 px-5 border-t flex justify-end shrink-0 ${
+        <div className={`p-3.5 px-5 border-t flex items-center justify-between shrink-0 ${
           isLight ? 'bg-slate-50 border-vip-navy-border' : 'bg-token-inner border-token-border'
         }`}>
+          <div>
+            {onOpenPrint && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onOpenPrint(medicine);
+                }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border transition ${
+                  isLight
+                    ? 'bg-white hover:bg-slate-100 text-vip-navy border-vip-navy-border'
+                    : 'bg-token-card hover:bg-slate-700 text-token-emerald border-token-border'
+                }`}
+              >
+                <Printer className="w-3.5 h-3.5" />
+                <span>Simulasi Print Etiket</span>
+              </button>
+            )}
+          </div>
+
           <button
             onClick={onClose}
             className={`px-4 py-1.5 rounded-lg text-xs font-semibold border transition ${

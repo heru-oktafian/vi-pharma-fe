@@ -92,7 +92,7 @@ export default function MasterDataDashboard({ user, branch, token, theme = 'dark
       {/* Sub-View Container (Zero Outer Scroll, full height) */}
       <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
         {activeTab === 'medicines' && (
-          <MedicinesView token={token} userRole={user?.user_role} theme={theme} />
+          <MedicinesView token={token} userRole={user?.user_role} theme={theme} branch={branch} />
         )}
         {activeTab === 'units' && (
           <UnitsView token={token} userRole={user?.user_role} theme={theme} />
