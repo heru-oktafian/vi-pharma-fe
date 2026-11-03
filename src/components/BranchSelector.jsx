@@ -20,7 +20,7 @@ export default function BranchSelector({ user, branches, sessionId, onBranchSele
   };
 
   return (
-    <div className={`border rounded-2xl p-4 sm:p-5 max-w-xl w-full max-h-[82vh] flex flex-col transition-all duration-200 ${
+    <div className={`border rounded-2xl p-3.5 sm:p-5 max-w-xl w-full max-h-[72vh] sm:max-h-[76vh] flex flex-col transition-all duration-200 shrink-0 ${
       isLight
         ? 'bg-white border-vip-navy-border shadow-lg text-slate-800'
         : 'bg-token-card border-token-border shadow-2xl text-slate-100'

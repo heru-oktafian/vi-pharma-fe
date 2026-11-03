@@ -95,12 +95,12 @@ export default function App() {
           onLogout={handleLogout}
         />
       ) : (
-        <div className="flex-1 flex flex-col items-center justify-between p-3 sm:p-5 relative overflow-hidden">
+        <div className="flex-1 flex flex-col items-center justify-between p-2 sm:p-3 relative overflow-hidden">
           {/* Top Floating Theme Switcher */}
-          <div className="absolute top-3 right-4 z-30">
+          <div className="absolute top-2.5 right-3.5 z-30">
             <button
               onClick={toggleTheme}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium shadow-xs transition-all duration-150 border ${
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium shadow-xs transition-all duration-150 border ${
                 isLight
                   ? 'bg-white hover:bg-vip-orange-light text-slate-700 border-vip-navy-border hover:border-vip-orange hover:text-vip-orange'
                   : 'bg-token-card hover:bg-slate-700 text-slate-200 border-token-border hover:border-token-emerald'
@@ -129,18 +129,18 @@ export default function App() {
             </>
           )}
 
-          {/* App Header Branding */}
-          <div className="text-center relative z-10 shrink-0 flex flex-col items-center mt-1 sm:mt-2">
+          {/* App Header Branding — Fixed shrink-0 with guaranteed spacing */}
+          <div className="text-center relative z-10 shrink-0 flex flex-col items-center mt-0.5 sm:mt-1">
             <img
               src="/vimedika-logo.png"
               alt="APOTEK Sistem Informasi"
-              className="h-14 sm:h-16 w-auto object-contain drop-shadow-sm transition-transform hover:scale-105 duration-200"
+              className="h-10 sm:h-12 w-auto object-contain drop-shadow-sm transition-transform hover:scale-105 duration-200"
               onError={(e) => { e.target.style.display = 'none'; }}
             />
-            <div className={`inline-flex items-center gap-2 mt-1.5 px-3 py-0.5 rounded-full shadow-xs border transition-colors ${
-              isLight ? 'bg-white/85 border-vip-navy-border text-slate-800' : 'bg-token-card/90 border-token-border text-white'
+            <div className={`inline-flex items-center gap-1.5 mt-1 px-2.5 py-0.5 rounded-full shadow-xs border transition-colors ${
+              isLight ? 'bg-white/90 border-vip-navy-border text-slate-800' : 'bg-token-card/90 border-token-border text-white'
             }`}>
-              <span className={`font-semibold text-xs tracking-tight ${isLight ? 'text-vip-navy' : 'text-slate-200'}`}>
+              <span className={`font-semibold text-[11px] sm:text-xs tracking-tight ${isLight ? 'text-vip-navy' : 'text-slate-200'}`}>
                 Vi-<span className={isLight ? 'text-vip-orange' : 'text-token-emerald font-bold'}>Pharma</span> Workstation
               </span>
               <span className={`text-[9px] uppercase font-bold px-1.5 py-0.2 rounded border ${
@@ -153,8 +153,8 @@ export default function App() {
             </div>
           </div>
 
-          {/* Main Card Switcher */}
-          <div className="relative z-10 w-full flex-1 flex items-center justify-center min-h-0 my-auto py-2">
+          {/* Main Card Switcher — Isolated flex-1 without my-auto to eliminate any vertical overflow/overlap */}
+          <div className="relative z-10 w-full flex-1 flex items-center justify-center min-h-0 py-1">
             {step === 'LOGIN' && (
               <QRLoginCard onAuthorized={handleAuthorized} theme={theme} />
             )}
@@ -170,8 +170,8 @@ export default function App() {
             )}
           </div>
 
-          {/* Footer */}
-          <footer className={`text-center text-[11px] relative z-10 shrink-0 pb-1 ${
+          {/* Footer — Fixed shrink-0 with guaranteed non-overlapping clearance */}
+          <footer className={`text-center text-[10px] sm:text-[11px] relative z-10 shrink-0 py-1 ${
             isLight ? 'text-slate-500' : 'text-slate-500'
           }`}>
             © 2026 Vi-Pharma — <span className={isLight ? 'text-vip-navy font-semibold' : 'text-token-emerald font-semibold'}>Apotek Sistem Informasi</span>
