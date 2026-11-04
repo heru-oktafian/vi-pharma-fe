@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Sun, Moon } from 'lucide-react';
+import { Sun, Moon, ShieldAlert, X } from 'lucide-react';
 import QRLoginCard from './components/QRLoginCard';
 import BranchSelector from './components/BranchSelector';
 import WorkstationDashboard from './components/WorkstationDashboard';
+import { WS_BASE_URL } from './services/api';
 
 export default function App() {
   const [step, setStep] = useState('LOGIN'); // 'LOGIN' | 'SELECT_BRANCH' | 'WORKSTATION'
@@ -11,6 +12,7 @@ export default function App() {
   const [sessionId, setSessionId] = useState(null);
   const [selectedBranch, setSelectedBranch] = useState(null);
   const [webToken, setWebToken] = useState(null);
+  const [remoteNotice, setRemoteNotice] = useState(null);
   const [theme, setTheme] = useState(() => localStorage.getItem('vipharma_theme') || 'dark');
 
   // Sync theme with DOM and localStorage
@@ -72,11 +74,68 @@ export default function App() {
   const handleSwitchBranch = () => { setStep('SELECT_BRANCH'); };
 
   const handleLogout = () => {
+    setRemoteNotice(null);
     localStorage.clear();
     setUser(null); setBranches([]); setSessionId(null);
     setSelectedBranch(null); setWebToken(null);
     setStep('LOGIN');
   };
+
+  const handleRemoteLogout = (noticeMsg) => {
+    localStorage.clear();
+    setUser(null); setBranches([]); setSessionId(null);
+    setSelectedBranch(null); setWebToken(null);
+    setStep('LOGIN');
+    setRemoteNotice(noticeMsg || 'Sesi workstation telah diakhiri secara remote dari aplikasi vi-token. Silakan scan QR ulang untuk masuk kembali.');
+  };
+
+  // Real-time Workstation WebSocket connection: listen for remote logout events
+  useEffect(() => {
+    if (step !== 'WORKSTATION' || !webToken) return;
+
+    let ws = null;
+    let pingInterval = null;
+
+    try {
+      const wsUrl = `${WS_BASE_URL}/workstation/ws?token=${encodeURIComponent(webToken)}`;
+      ws = new WebSocket(wsUrl);
+
+      ws.onopen = () => {
+        pingInterval = setInterval(() => {
+          if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send('ping');
+          }
+        }, 20000);
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const payload = JSON.parse(event.data);
+          if (payload.event === 'REMOTE_LOGOUT') {
+            const msg = payload.data?.message || 'Sesi workstation telah diakhiri secara remote dari aplikasi vi-token.';
+            handleRemoteLogout(msg);
+          }
+        } catch (_) {}
+      };
+
+      ws.onerror = (err) => {
+        console.warn('[Workstation WS] Warning/Error:', err);
+      };
+
+      ws.onclose = () => {
+        if (pingInterval) clearInterval(pingInterval);
+      };
+    } catch (err) {
+      console.error('[Workstation WS] Init failed:', err);
+    }
+
+    return () => {
+      if (pingInterval) clearInterval(pingInterval);
+      if (ws) {
+        try { ws.close(); } catch (_) {}
+      }
+    };
+  }, [step, webToken]);
 
   const isLight = theme === 'light';
 
@@ -93,6 +152,7 @@ export default function App() {
           onToggleTheme={toggleTheme}
           onSwitchBranch={handleSwitchBranch}
           onLogout={handleLogout}
+          onRemoteLogout={handleRemoteLogout}
         />
       ) : (
         <div className="flex-1 flex flex-col items-center justify-between p-2 sm:p-3 relative overflow-hidden">
@@ -154,9 +214,29 @@ export default function App() {
           </div>
 
           {/* Main Card Switcher — Isolated flex-1 without my-auto to eliminate any vertical overflow/overlap */}
-          <div className="relative z-10 w-full flex-1 flex items-center justify-center min-h-0 py-1">
+          <div className="relative z-10 w-full flex-1 flex flex-col items-center justify-center min-h-0 py-1">
             {step === 'LOGIN' && (
-              <QRLoginCard onAuthorized={handleAuthorized} theme={theme} />
+              <>
+                {remoteNotice && (
+                  <div className="w-full max-w-sm mb-2 p-2.5 px-3.5 rounded-xl border border-rose-500/40 bg-rose-500/10 text-rose-300 text-xs shadow-lg backdrop-blur-md flex items-start justify-between gap-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="flex items-start gap-2">
+                      <ShieldAlert className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                      <div>
+                        <div className="font-bold text-rose-200 text-xs">Sesi Workstation Diakhiri</div>
+                        <p className="text-[11px] text-rose-300/90 mt-0.5 leading-snug">{remoteNotice}</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setRemoteNotice(null)}
+                      className="text-rose-400 hover:text-white shrink-0 p-0.5 rounded transition"
+                      title="Tutup pesan"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
+                <QRLoginCard onAuthorized={handleAuthorized} theme={theme} />
+              </>
             )}
             {step === 'SELECT_BRANCH' && (
               <BranchSelector

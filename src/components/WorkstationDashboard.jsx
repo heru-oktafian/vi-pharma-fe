@@ -7,7 +7,7 @@ import {
 import { getBranchDetail } from '../services/api';
 import MasterDataDashboard from './master/MasterDataDashboard';
 
-export default function WorkstationDashboard({ user, branch, token, theme = 'dark', onToggleTheme, onSwitchBranch, onLogout }) {
+export default function WorkstationDashboard({ user, branch, token, theme = 'dark', onToggleTheme, onSwitchBranch, onLogout, onRemoteLogout }) {
   const [branchDetail, setBranchDetail] = useState(null);
   const [activeModule, setActiveModule] = useState(null);
   const [lockedNotice, setLockedNotice] = useState(null);
