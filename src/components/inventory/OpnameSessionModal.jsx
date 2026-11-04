@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { X, ClipboardCheck, Plus, Trash2, Check, AlertCircle, Warehouse, ShoppingCart, HelpCircle, ArrowRight } from 'lucide-react';
+import { X, ClipboardCheck, Plus, Trash2, Check, AlertCircle, Warehouse, ShoppingCart, HelpCircle, ArrowRight, Package } from 'lucide-react';
 import { getStockSummaries, createOpnameSession, submitOpnameSession } from '../../services/inventoryApi';
+import { getMedicines } from '../../services/masterDataApi';
 
 export default function OpnameSessionModal({ isOpen, onClose, theme = 'dark', branchId, token, onSuccess }) {
   if (!isOpen) return null;
@@ -11,8 +12,9 @@ export default function OpnameSessionModal({ isOpen, onClose, theme = 'dark', br
   const [rackName, setRackName] = useState('');
   const [notes, setNotes] = useState('');
 
-  // Stock catalog for picking batches
+  // Stock catalog & Master medicines
   const [stockCatalog, setStockCatalog] = useState([]);
+  const [masterMedicines, setMasterMedicines] = useState([]);
   const [loadingCatalog, setLoadingCatalog] = useState(true);
 
   // Opname counted items
@@ -24,10 +26,15 @@ export default function OpnameSessionModal({ isOpen, onClose, theme = 'dark', br
     async function loadCatalog() {
       try {
         setLoadingCatalog(true);
-        const res = await getStockSummaries(token, '', branchId);
-        setStockCatalog(res || []);
+        const [stockRes, medRes] = await Promise.all([
+          getStockSummaries(token, '', branchId).catch(() => []),
+          getMedicines(token, { limit: 150 }).catch(() => ({ data: [] })),
+        ]);
+        setStockCatalog(stockRes || []);
+        const mList = medRes?.data || (Array.isArray(medRes) ? medRes : []);
+        setMasterMedicines(mList);
       } catch (err) {
-        console.error('Failed to load stock catalog for opname:', err);
+        console.error('Failed to load stock catalog & medicines for opname:', err);
       } finally {
         setLoadingCatalog(false);
       }
@@ -35,42 +42,87 @@ export default function OpnameSessionModal({ isOpen, onClose, theme = 'dark', br
     loadCatalog();
   }, [token, branchId]);
 
-  // Flatten all active batches with medicine info for selection
-  const allBatches = stockCatalog.flatMap(med => {
+  // 1. Existing Batches in Database
+  const existingBatches = stockCatalog.flatMap(med => {
     return (med.batches || []).map(b => ({
-      ...b,
+      type: 'EXISTING_BATCH',
+      id: b.id,
+      medicine_id: med.medicine_id,
       medicine_name: med.name,
       item_code: med.item_code,
       base_unit_name: med.base_unit_name,
+      batch_number: b.batch_number,
+      expired_date: b.expired_date,
+      qty_warehouse: b.qty_warehouse || 0,
+      qty_shelf: b.qty_shelf || 0,
     }));
   });
 
-  const handleAddBatchToCount = (batchId) => {
-    if (!batchId) return;
-    const found = allBatches.find(b => b.id === batchId);
-    if (!found) return;
+  // 2. Master medicines for adding physical count (even if 0 batch yet)
+  const masterList = masterMedicines.map(m => ({
+    type: 'MASTER_MEDICINE',
+    id: `new-${m.id}`,
+    medicine_id: m.id,
+    medicine_name: m.name,
+    item_code: m.item_code,
+    base_unit_name: m.base_unit?.name || 'Pcs',
+  }));
 
-    // Check if already in list
-    if (items.some(it => it.batch_id === batchId)) {
-      return;
-    }
+  const handleSelectItem = (val) => {
+    if (!val) return;
 
-    const sysQty = location === 'GUDANG' ? (found.qty_warehouse || 0) : (found.qty_shelf || 0);
+    if (val.startsWith('batch:')) {
+      const batchId = val.replace('batch:', '');
+      const found = existingBatches.find(b => b.id === batchId);
+      if (!found) return;
 
-    setItems([
-      ...items,
-      {
-        medicine_id: found.medicine_id,
-        medicine_name: found.medicine_name,
-        batch_id: found.id,
-        batch_number: found.batch_number,
-        expired_date: found.expired_date,
-        base_unit_name: found.base_unit_name,
-        system_qty: sysQty,
-        physical_qty: sysQty, // default same as system for quick verification
-        notes: '',
+      if (items.some(it => it.batch_id === batchId)) {
+        return;
       }
-    ]);
+
+      const sysQty = location === 'GUDANG' ? (found.qty_warehouse || 0) : (found.qty_shelf || 0);
+
+      setItems([
+        ...items,
+        {
+          key: `batch-${found.id}`,
+          medicine_id: found.medicine_id,
+          medicine_name: found.medicine_name,
+          batch_id: found.id,
+          batch_number: found.batch_number,
+          expired_date: found.expired_date ? found.expired_date.slice(0, 10) : '',
+          base_unit_name: found.base_unit_name,
+          system_qty: sysQty,
+          physical_qty: sysQty,
+          is_new_batch: false,
+          notes: '',
+        }
+      ]);
+    } else if (val.startsWith('med:')) {
+      const medId = val.replace('med:', '');
+      const found = masterList.find(m => m.medicine_id === medId);
+      if (!found) return;
+
+      const defaultExp = new Date();
+      defaultExp.setFullYear(defaultExp.getFullYear() + 1);
+
+      setItems([
+        ...items,
+        {
+          key: `new-${found.medicine_id}-${Date.now()}`,
+          medicine_id: found.medicine_id,
+          medicine_name: found.medicine_name,
+          batch_id: '',
+          batch_number: '',
+          expired_date: defaultExp.toISOString().slice(0, 10),
+          base_unit_name: found.base_unit_name,
+          system_qty: 0,
+          physical_qty: 0,
+          is_new_batch: true,
+          notes: 'Stok awal fisik',
+        }
+      ]);
+    }
   };
 
   const handleUpdateItem = (index, field, value) => {
@@ -100,7 +152,9 @@ export default function OpnameSessionModal({ isOpen, onClose, theme = 'dark', br
         notes: notes,
         items: items.map(it => ({
           medicine_id: it.medicine_id,
-          batch_id: it.batch_id,
+          batch_id: it.batch_id || undefined,
+          batch_number: it.batch_number ? it.batch_number.trim() : undefined,
+          expired_date: it.expired_date || undefined,
           physical_qty: parseFloat(it.physical_qty) || 0,
           notes: it.notes,
         })),
@@ -121,8 +175,16 @@ export default function OpnameSessionModal({ isOpen, onClose, theme = 'dark', br
       return;
     }
     if (items.length === 0) {
-      setError('Pilih minimal satu batch obat di rak yang dihitung');
+      setError('Pilih minimal satu obat/batch di rak yang dihitung');
       return;
+    }
+
+    for (let i = 0; i < items.length; i++) {
+      const it = items[i];
+      if (it.is_new_batch && !it.batch_number?.trim()) {
+        setError(`Baris #${i + 1} (${it.medicine_name}): Nomor batch fisik wajib diisi`);
+        return;
+      }
     }
 
     if (!window.confirm(`Konfirmasi penyesuaian stok fisik untuk ${items.length} item pada ${rackName} (${location})?\n\nSaldo stok akan disesuaikan seketika tanpa mengganggu kasir di rak lain.`)) {
@@ -145,7 +207,9 @@ export default function OpnameSessionModal({ isOpen, onClose, theme = 'dark', br
       await submitOpnameSession(created.id, {
         items: items.map(it => ({
           medicine_id: it.medicine_id,
-          batch_id: it.batch_id,
+          batch_id: it.batch_id || undefined,
+          batch_number: it.batch_number ? it.batch_number.trim() : undefined,
+          expired_date: it.expired_date || undefined,
           physical_qty: parseFloat(it.physical_qty) || 0,
           notes: it.notes,
         })),
@@ -235,7 +299,7 @@ export default function OpnameSessionModal({ isOpen, onClose, theme = 'dark', br
                   }`}
                 >
                   <Warehouse className="w-3.5 h-3.5" />
-                  <span>Gudang</span>
+                  <span>Gudang Belakang</span>
                 </button>
               </div>
             </div>
@@ -266,7 +330,7 @@ export default function OpnameSessionModal({ isOpen, onClose, theme = 'dark', br
                 type="text"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Opname berkala..."
+                placeholder="Opname rutin..."
                 className={`w-full px-3 py-1.5 text-xs rounded-lg border ${
                   isLight ? 'bg-white border-slate-300' : 'bg-token-card border-token-border text-white'
                 }`}
@@ -274,7 +338,7 @@ export default function OpnameSessionModal({ isOpen, onClose, theme = 'dark', br
             </div>
           </div>
 
-          {/* Quick Picker: Add Medicine/Batch to Opname */}
+          {/* Quick Picker: Dropdown Obat & Batch */}
           <div className={`p-3 rounded-xl border flex flex-col sm:flex-row items-center gap-3 shrink-0 ${
             isLight ? 'bg-blue-50/50 border-blue-200' : 'bg-blue-500/10 border-blue-500/20'
           }`}>
@@ -285,7 +349,7 @@ export default function OpnameSessionModal({ isOpen, onClose, theme = 'dark', br
 
             <select
               onChange={(e) => {
-                handleAddBatchToCount(e.target.value);
+                handleSelectItem(e.target.value);
                 e.target.value = '';
               }}
               defaultValue=""
@@ -293,12 +357,27 @@ export default function OpnameSessionModal({ isOpen, onClose, theme = 'dark', br
                 isLight ? 'bg-white border-slate-300' : 'bg-token-card border-token-border text-white'
               }`}
             >
-              <option value="" disabled>-- Klik untuk memilih obat & batch yang ada di rak ini --</option>
-              {allBatches.map(b => (
-                <option key={b.id} value={b.id}>
-                  {b.medicine_name} | Batch: {b.batch_number} (ED: {b.expired_date?.slice(0, 10)}) — Sistem {location}: {location === 'GUDANG' ? b.qty_warehouse : b.qty_shelf} {b.base_unit_name}
-                </option>
-              ))}
+              <option value="" disabled>-- Klik untuk memilih obat / batch yang ada di rak ini --</option>
+
+              {/* 1. Group: Batch Yang Sudah Ada di Database */}
+              {existingBatches.length > 0 && (
+                <optgroup label="📦 Batch Aktif di Sistem">
+                  {existingBatches.map(b => (
+                    <option key={`batch-${b.id}`} value={`batch:${b.id}`}>
+                      {b.medicine_name} | Batch: {b.batch_number} (ED: {b.expired_date?.slice(0, 10)}) — Sistem {location}: {location === 'GUDANG' ? b.qty_warehouse : b.qty_shelf} {b.base_unit_name}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+
+              {/* 2. Group: Seluruh Katalog Master Obat (Untuk Stok Awal / Batch Baru) */}
+              <optgroup label="📋 Katalog Master Obat (Hitung Fisik / Batch Baru)">
+                {masterList.map(m => (
+                  <option key={`med-${m.medicine_id}`} value={`med:${m.medicine_id}`}>
+                    {m.medicine_name} ({m.item_code}) — [+ Input Hitung Fisik Rak]
+                  </option>
+                ))}
+              </optgroup>
             </select>
           </div>
 
@@ -309,7 +388,7 @@ export default function OpnameSessionModal({ isOpen, onClose, theme = 'dark', br
                 Item Dalam Sesi Hitung Ini ({items.length} item)
               </span>
               <span className="text-[11px] text-slate-400">
-                * Input hasil hitung fisik pada kolom "Fisik Qty"
+                * Masukkan hasil hitung fisik pada kolom "Hasil Hitung Fisik"
               </span>
             </div>
 
@@ -317,8 +396,11 @@ export default function OpnameSessionModal({ isOpen, onClose, theme = 'dark', br
               <div className={`p-8 rounded-xl border text-center ${
                 isLight ? 'bg-slate-50 border-slate-200 text-slate-500' : 'bg-token-inner/30 border-token-border text-slate-400'
               }`}>
-                <p className="text-xs">Belum ada item yang dimasukkan ke sesi opname ini.</p>
-                <p className="text-[11px] text-slate-500 mt-1">Gunakan dropdown di atas untuk memilih obat-obat yang sedang Anda hitung di rak.</p>
+                <Package className="w-8 h-8 mx-auto mb-2 opacity-30 text-blue-400" />
+                <p className="text-xs font-semibold">Belum ada obat yang dimasukkan ke sesi hitung ini.</p>
+                <p className="text-[11px] text-slate-500 mt-1">
+                  Pilih obat dari dropdown di atas. Anda dapat memilih batch yang sudah tercatat atau langsung memilih obat dari katalog master untuk menghitung stok awal fisik rak!
+                </p>
               </div>
             ) : (
               <div className="flex flex-col gap-2">
@@ -329,22 +411,48 @@ export default function OpnameSessionModal({ isOpen, onClose, theme = 'dark', br
 
                   return (
                     <div
-                      key={it.batch_id}
+                      key={it.key || idx}
                       className={`p-3 rounded-xl border transition-all ${
                         isLight ? 'bg-slate-50 border-slate-200' : 'bg-token-inner/40 border-token-border'
                       }`}
                     >
                       <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
-                        {/* Medicine info (5 cols) */}
+                        {/* Medicine Info & Batch Edit if new (5 cols) */}
                         <div className="sm:col-span-5">
                           <span className={`text-xs font-bold block ${isLight ? 'text-vip-navy' : 'text-white'}`}>
                             {it.medicine_name}
                           </span>
-                          <div className="flex items-center gap-2 mt-1 text-[11px] text-slate-400 font-mono">
-                            <span>Batch: <strong>{it.batch_number}</strong></span>
-                            <span>•</span>
-                            <span>ED: {it.expired_date?.slice(0, 10)}</span>
-                          </div>
+
+                          {it.is_new_batch ? (
+                            <div className="flex items-center gap-2 mt-1.5">
+                              <input
+                                type="text"
+                                required
+                                placeholder="No. Batch Fisik (e.g. B2401)"
+                                value={it.batch_number}
+                                onChange={(e) => handleUpdateItem(idx, 'batch_number', e.target.value)}
+                                className={`w-32 px-2 py-0.5 text-[11px] font-mono font-bold rounded border uppercase ${
+                                  isLight ? 'bg-white border-slate-300' : 'bg-token-card border-token-border text-white'
+                                }`}
+                              />
+                              <input
+                                type="date"
+                                required
+                                value={it.expired_date}
+                                onChange={(e) => handleUpdateItem(idx, 'expired_date', e.target.value)}
+                                title="Expired Date"
+                                className={`w-32 px-2 py-0.5 text-[11px] rounded border ${
+                                  isLight ? 'bg-white border-slate-300' : 'bg-token-card border-token-border text-white'
+                                }`}
+                              />
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2 mt-1 text-[11px] text-slate-400 font-mono">
+                              <span>Batch: <strong>{it.batch_number}</strong></span>
+                              <span>•</span>
+                              <span>ED: {it.expired_date}</span>
+                            </div>
+                          )}
                         </div>
 
                         {/* System Qty (2 cols) */}
@@ -414,7 +522,7 @@ export default function OpnameSessionModal({ isOpen, onClose, theme = 'dark', br
           isLight ? 'bg-white border-slate-200' : 'bg-token-card border-token-border'
         }`}>
           <div className="text-xs text-slate-400">
-            Apotek tetap aktif berjalan: tidak perlu tutup kasir.
+            Apotek tetap aktif: kasir tidak terganggu selama proses opname.
           </div>
 
           <div className="flex items-center gap-2 w-full sm:w-auto">
