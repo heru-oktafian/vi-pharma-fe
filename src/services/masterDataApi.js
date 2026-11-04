@@ -110,16 +110,25 @@ export async function deleteDoctor(id, token) {
 // 5. MEDICINES (Katalog Master Obat & Alkes)
 // ==========================================
 export async function getMedicines(params = {}, token) {
+  let actualParams = params || {};
+  let actualToken = token;
+
+  // Handle flexible signature: getMedicines(token, params) or getMedicines(params, token)
+  if (typeof params === 'string') {
+    actualToken = params;
+    actualParams = (token && typeof token === 'object') ? token : {};
+  }
+
   const query = new URLSearchParams();
-  if (params.search) query.append('search', params.search);
-  if (params.classification) query.append('classification', params.classification);
-  if (params.category_id) query.append('category_id', params.category_id);
-  if (params.active_only !== undefined) query.append('active_only', params.active_only);
-  if (params.page) query.append('page', params.page);
-  if (params.limit) query.append('limit', params.limit);
+  if (actualParams.search) query.append('search', actualParams.search);
+  if (actualParams.classification) query.append('classification', actualParams.classification);
+  if (actualParams.category_id) query.append('category_id', actualParams.category_id);
+  if (actualParams.active_only !== undefined) query.append('active_only', actualParams.active_only);
+  if (actualParams.page) query.append('page', actualParams.page);
+  if (actualParams.limit) query.append('limit', actualParams.limit);
 
   const qs = query.toString();
-  return request(`/medicines${qs ? `?${qs}` : ''}`, { method: 'GET' }, token);
+  return request(`/medicines${qs ? `?${qs}` : ''}`, { method: 'GET' }, actualToken);
 }
 
 export async function getMedicineById(id, token) {

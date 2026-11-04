@@ -49,10 +49,10 @@ export default function PurchaseInvoiceModal({ isOpen, onClose, theme = 'dark', 
         setLoadingInitial(true);
         const [supRes, medRes] = await Promise.all([
           getSuppliers(token).catch(() => []),
-          getMedicines(token, { limit: 100 }).catch(() => ({ data: [] })),
+          getMedicines({ limit: 200 }, token).catch(() => ({ data: [] })),
         ]);
         setSuppliers(supRes || []);
-        const medList = medRes?.data || (Array.isArray(medRes) ? medRes : []);
+        const medList = medRes?.data || medRes?.items || (Array.isArray(medRes) ? medRes : []);
         setMedicines(medList);
       } catch (err) {
         console.error('Failed to load initial invoice dependencies:', err);

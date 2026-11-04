@@ -28,10 +28,32 @@ export default function OpnameSessionModal({ isOpen, onClose, theme = 'dark', br
         setLoadingCatalog(true);
         const [stockRes, medRes] = await Promise.all([
           getStockSummaries(token, '', branchId).catch(() => []),
-          getMedicines(token, { limit: 150 }).catch(() => ({ data: [] })),
+          getMedicines({ limit: 300 }, token).catch((err) => {
+            console.error('getMedicines error:', err);
+            return [];
+          }),
         ]);
         setStockCatalog(stockRes || []);
-        const mList = medRes?.data || (Array.isArray(medRes) ? medRes : []);
+
+        let mList = [];
+        if (Array.isArray(medRes)) {
+          mList = medRes;
+        } else if (medRes && Array.isArray(medRes.data)) {
+          mList = medRes.data;
+        } else if (medRes && Array.isArray(medRes.items)) {
+          mList = medRes.items;
+        }
+
+        // If mList is empty, fallback to medicines from stockRes
+        if (mList.length === 0 && Array.isArray(stockRes) && stockRes.length > 0) {
+          mList = stockRes.map(s => ({
+            id: s.medicine_id,
+            name: s.name,
+            item_code: s.item_code,
+            base_unit: { name: s.base_unit_name },
+          }));
+        }
+
         setMasterMedicines(mList);
       } catch (err) {
         console.error('Failed to load stock catalog & medicines for opname:', err);
@@ -58,15 +80,34 @@ export default function OpnameSessionModal({ isOpen, onClose, theme = 'dark', br
     }));
   });
 
-  // 2. Master medicines for adding physical count (even if 0 batch yet)
-  const masterList = masterMedicines.map(m => ({
-    type: 'MASTER_MEDICINE',
-    id: `new-${m.id}`,
-    medicine_id: m.id,
-    medicine_name: m.name,
-    item_code: m.item_code,
-    base_unit_name: m.base_unit?.name || 'Pcs',
-  }));
+  // 2. Master medicines for adding physical count (merges stockCatalog & masterMedicines so it is never empty)
+  const allMedsMap = new Map();
+  (stockCatalog || []).forEach(m => {
+    if (m.medicine_id) {
+      allMedsMap.set(m.medicine_id, {
+        type: 'MASTER_MEDICINE',
+        id: `new-${m.medicine_id}`,
+        medicine_id: m.medicine_id,
+        medicine_name: m.name,
+        item_code: m.item_code,
+        base_unit_name: m.base_unit_name || 'Pcs',
+      });
+    }
+  });
+  (masterMedicines || []).forEach(m => {
+    const medId = m.id || m.medicine_id;
+    if (medId && !allMedsMap.has(medId)) {
+      allMedsMap.set(medId, {
+        type: 'MASTER_MEDICINE',
+        id: `new-${medId}`,
+        medicine_id: medId,
+        medicine_name: m.name,
+        item_code: m.item_code,
+        base_unit_name: m.base_unit?.name || m.base_unit_name || 'Pcs',
+      });
+    }
+  });
+  const masterList = Array.from(allMedsMap.values());
 
   const handleSelectItem = (val) => {
     if (!val) return;
@@ -372,11 +413,17 @@ export default function OpnameSessionModal({ isOpen, onClose, theme = 'dark', br
 
               {/* 2. Group: Seluruh Katalog Master Obat (Untuk Stok Awal / Batch Baru) */}
               <optgroup label="📋 Katalog Master Obat (Hitung Fisik / Batch Baru)">
-                {masterList.map(m => (
-                  <option key={`med-${m.medicine_id}`} value={`med:${m.medicine_id}`}>
-                    {m.medicine_name} ({m.item_code}) — [+ Input Hitung Fisik Rak]
+                {masterList.length === 0 ? (
+                  <option disabled value="">
+                    {loadingCatalog ? 'Memuat katalog obat...' : '(Belum ada data obat di Master Data Katalog)'}
                   </option>
-                ))}
+                ) : (
+                  masterList.map(m => (
+                    <option key={`med-${m.medicine_id}`} value={`med:${m.medicine_id}`}>
+                      {m.medicine_name} ({m.item_code}) — [+ Input Hitung Fisik Rak]
+                    </option>
+                  ))
+                )}
               </optgroup>
             </select>
           </div>
