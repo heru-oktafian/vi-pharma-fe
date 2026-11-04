@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { getBranchDetail } from '../services/api';
 import MasterDataDashboard from './master/MasterDataDashboard';
+import InventoryDashboard from './inventory/InventoryDashboard';
 
 export default function WorkstationDashboard({ user, branch, token, theme = 'dark', onToggleTheme, onSwitchBranch, onLogout, onRemoteLogout }) {
   const [branchDetail, setBranchDetail] = useState(null);
@@ -210,6 +211,14 @@ export default function WorkstationDashboard({ user, branch, token, theme = 'dar
       <main className="flex-1 min-h-0 max-w-7xl w-full mx-auto p-3 sm:p-4 md:p-5 flex flex-col gap-2.5 overflow-hidden">
         {activeModule === 'master-data' ? (
           <MasterDataDashboard
+            user={user}
+            branch={branch}
+            token={token}
+            theme={theme}
+            onBack={() => setActiveModule(null)}
+          />
+        ) : activeModule === 'gudang' ? (
+          <InventoryDashboard
             user={user}
             branch={branch}
             token={token}
