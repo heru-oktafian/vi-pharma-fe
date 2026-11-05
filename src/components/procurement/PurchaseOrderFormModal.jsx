@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Plus, Trash2, FileText, Check, AlertCircle, Building2, Calendar, ShieldAlert } from 'lucide-react';
-import { getSuppliers, getMedicines } from '../../services/masterDataApi';
+import { getSuppliers, getMedicines, getUnits } from '../../services/masterDataApi';
 import { createPurchaseOrder, updatePurchaseOrder } from '../../services/procurementApi';
 
 export default function PurchaseOrderFormModal({ isOpen, onClose, theme = 'dark', branch, token, editPO = null, onSuccess }) {
@@ -11,6 +11,7 @@ export default function PurchaseOrderFormModal({ isOpen, onClose, theme = 'dark'
 
   const [suppliers, setSuppliers] = useState([]);
   const [medicines, setMedicines] = useState([]);
+  const [units, setUnits] = useState([]);
   const [loadingInitial, setLoadingInitial] = useState(true);
 
   // Form State
@@ -50,13 +51,16 @@ export default function PurchaseOrderFormModal({ isOpen, onClose, theme = 'dark'
     async function loadData() {
       try {
         setLoadingInitial(true);
-        const [supRes, medRes] = await Promise.all([
+        const [supRes, medRes, unitRes] = await Promise.all([
           getSuppliers(token).catch(() => []),
-          getMedicines({ limit: 200 }, token).catch(() => ({ data: [] })),
+          getMedicines({ limit: 300 }, token).catch(() => ({ data: [] })),
+          getUnits(token).catch(() => []),
         ]);
         setSuppliers(supRes || []);
         const medList = medRes?.data || medRes?.items || (Array.isArray(medRes) ? medRes : []);
         setMedicines(medList);
+        const unitList = Array.isArray(unitRes) ? unitRes : (unitRes?.data || []);
+        setUnits(unitList);
       } catch (err) {
         console.error('Failed to load PO dependencies:', err);
       } finally {
@@ -155,7 +159,7 @@ export default function PurchaseOrderFormModal({ isOpen, onClose, theme = 'dark'
         notes: notes,
         items: items.map(it => ({
           medicine_id: it.medicine_id,
-          unit_id: it.unit_id || 'UNT_PCS',
+          unit_id: it.unit_id || (units.length > 0 ? units[0].id : 'UNT000000000001'),
           qty_ordered: parseFloat(it.qty_ordered) || 0,
           estimated_price: parseFloat(it.estimated_price) || 0,
           notes: it.notes,
@@ -410,17 +414,22 @@ export default function PurchaseOrderFormModal({ isOpen, onClose, theme = 'dark'
                         {/* 2. Packaging Unit (2 cols) */}
                         <div className="sm:col-span-2">
                           <label className="text-[10px] font-bold block mb-1 text-slate-400">
-                            Satuan Pesan
+                            Satuan Pesan *
                           </label>
-                          <input
-                            type="text"
-                            value={it.unit_id || 'Pcs'}
+                          <select
+                            value={it.unit_id || ''}
                             onChange={(e) => handleItemChange(idx, 'unit_id', e.target.value)}
-                            placeholder="Box/Botol"
-                            className={`w-full px-2 py-1.5 text-xs rounded-lg border ${
-                              isLight ? 'bg-white border-slate-300' : 'bg-token-card border-token-border text-white'
+                            className={`w-full px-2 py-1.5 text-xs rounded-lg border font-medium ${
+                              isLight ? 'bg-white border-slate-300 text-slate-900' : 'bg-token-card border-token-border text-white'
                             }`}
-                          />
+                          >
+                            <option value="">-- Pilih Satuan --</option>
+                            {units.map((u) => (
+                              <option key={u.id} value={u.id}>
+                                {u.name} ({u.symbol})
+                              </option>
+                            ))}
+                          </select>
                         </div>
 
                         {/* 3. Qty Ordered (2 cols) */}

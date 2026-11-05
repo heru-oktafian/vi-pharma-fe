@@ -8,6 +8,7 @@ export default function PurchaseOrdersListView({
   theme = 'dark',
   branch,
   spTypeFilter = 'ALL',
+  refreshKey = 0,
   onOpenCreate,
   onOpenDetail,
   onOpenPrint,
@@ -43,7 +44,7 @@ export default function PurchaseOrdersListView({
       loadOrders();
     }, 250);
     return () => clearTimeout(timer);
-  }, [search, statusFilter, spTypeFilter, branch?.id, token]);
+  }, [search, statusFilter, spTypeFilter, branch?.id, token, refreshKey]);
 
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-3 overflow-hidden">
@@ -141,14 +142,14 @@ export default function PurchaseOrdersListView({
                   const isDraft = po.status === 'DRAFT';
 
                   return (
-                    <tr key={po.id} className="hover:bg-slate-500/5 transition">
-                      <td className="py-2.5 px-3 font-mono font-bold text-slate-200">
+                    <tr key={po.id} className={`transition ${isLight ? 'hover:bg-slate-50' : 'hover:bg-slate-500/5'}`}>
+                      <td className={`py-2.5 px-3 font-mono font-bold ${isLight ? 'text-slate-900' : 'text-slate-200'}`}>
                         {po.po_number}
                       </td>
-                      <td className="py-2.5 px-3 font-medium">
+                      <td className={`py-2.5 px-3 font-medium ${isLight ? 'text-slate-800' : 'text-white'}`}>
                         {po.supplier?.name || '-'}
                       </td>
-                      <td className="py-2.5 px-3 font-mono text-slate-400">
+                      <td className={`py-2.5 px-3 font-mono ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
                         {po.order_date?.slice(0, 10)}
                       </td>
                       <td className="py-2.5 px-3 text-center">
@@ -175,13 +176,13 @@ export default function PurchaseOrdersListView({
                           {po.status}
                         </span>
                       </td>
-                      <td className="py-2.5 px-3 text-center font-mono">
+                      <td className={`py-2.5 px-3 text-center font-mono ${isLight ? 'text-slate-800' : 'text-slate-300'}`}>
                         {po.total_items}
                       </td>
                       <td className="py-2.5 px-3 text-right font-mono font-bold text-token-emerald">
                         Rp {(po.total_estimated_amount || 0).toLocaleString('id-ID')}
                       </td>
-                      <td className="py-2.5 px-3 text-slate-300 text-[11px] truncate max-w-xs">
+                      <td className={`py-2.5 px-3 text-[11px] truncate max-w-xs ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
                         {po.pharmacist_name}
                       </td>
                       <td className="py-2.5 px-3 text-center">

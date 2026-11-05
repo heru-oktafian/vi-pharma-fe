@@ -8,6 +8,7 @@ import PrintableSPModal from './PrintableSPModal';
 
 export default function ProcurementDashboard({ user, branch, token, theme = 'dark', onBack }) {
   const [activeTab, setActiveTab] = useState('all');
+  const [refreshKey, setRefreshKey] = useState(0);
   const isLight = theme === 'light';
 
   // Modals
@@ -63,6 +64,11 @@ export default function ProcurementDashboard({ user, branch, token, theme = 'dar
   const handleOpenEdit = (po) => {
     setEditPO(po);
     setFormModalOpen(true);
+  };
+
+  const handleRefreshList = () => {
+    setActiveTab('all');
+    setRefreshKey((k) => k + 1);
   };
 
   return (
@@ -145,6 +151,7 @@ export default function ProcurementDashboard({ user, branch, token, theme = 'dar
             theme={theme}
             branch={branch}
             spTypeFilter="ALL"
+            refreshKey={refreshKey}
             onOpenCreate={handleOpenCreate}
             onOpenDetail={handleOpenDetail}
             onOpenPrint={handleOpenPrint}
@@ -158,6 +165,7 @@ export default function ProcurementDashboard({ user, branch, token, theme = 'dar
             theme={theme}
             branch={branch}
             spTypeFilter="NARKOTIKA" // Defaults to showing regulated types
+            refreshKey={refreshKey}
             onOpenCreate={handleOpenCreate}
             onOpenDetail={handleOpenDetail}
             onOpenPrint={handleOpenPrint}
@@ -183,9 +191,7 @@ export default function ProcurementDashboard({ user, branch, token, theme = 'dar
         branch={branch}
         token={token}
         editPO={editPO}
-        onSuccess={() => {
-          setActiveTab('all');
-        }}
+        onSuccess={handleRefreshList}
       />
 
       {/* Detail Modal */}
@@ -198,9 +204,7 @@ export default function ProcurementDashboard({ user, branch, token, theme = 'dar
         theme={theme}
         onPrint={handleOpenPrint}
         onEdit={handleOpenEdit}
-        onRefresh={() => {
-          setActiveTab('all');
-        }}
+        onRefresh={handleRefreshList}
       />
 
       {/* Official Printable SP Modal */}
