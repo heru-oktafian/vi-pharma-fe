@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import {
   Plus, Search, Eye, Edit2, Trash2, CheckCircle2, XCircle,
   AlertCircle, RefreshCw, Filter, Layers, DollarSign, Tag, Pill,
-  AlertTriangle, Printer, FileText
+  AlertTriangle, Printer, FileText, QrCode
 } from 'lucide-react';
 import ClassificationBadge, { CLASSIFICATIONS } from './ClassificationBadge';
 import MedicineDetailModal from './MedicineDetailModal';
 import MedicineFormModal from './MedicineFormModal';
 import EtiketPrintPreviewModal from './EtiketPrintPreviewModal';
+import ItemBarcodeLabelModal from './ItemBarcodeLabelModal';
 import { getMedicines, getMedicineById, deleteMedicine, getUnits, getCategories, getSuppliers } from '../../services/masterDataApi';
 
 export default function MedicinesView({ token, userRole, theme = 'dark', branch }) {
@@ -37,6 +38,10 @@ export default function MedicinesView({ token, userRole, theme = 'dark', branch 
   const [etiketModalOpen, setEtiketModalOpen] = useState(false);
   const [etiketPrintTarget, setEtiketPrintTarget] = useState(null);
   const [etiketPrintMode, setEtiketPrintMode] = useState('single');
+
+  // Barcode / QR-Code Thermal Label Modal
+  const [barcodeModalOpen, setBarcodeModalOpen] = useState(false);
+  const [barcodeTargetMedicine, setBarcodeTargetMedicine] = useState(null);
 
   // Notifications
   const [alert, setAlert] = useState(null);
@@ -140,6 +145,12 @@ export default function MedicinesView({ token, userRole, theme = 'dark', branch 
     setEtiketPrintTarget(medicines[0] || null);
     setEtiketPrintMode('group');
     setEtiketModalOpen(true);
+  };
+
+  // Open Barcode / QR-Code Label Modal
+  const handleOpenBarcode = (item) => {
+    setBarcodeTargetMedicine(item);
+    setBarcodeModalOpen(true);
   };
 
   // Delete
@@ -270,6 +281,21 @@ export default function MedicinesView({ token, userRole, theme = 'dark', branch 
           >
             <Printer className="w-3.5 h-3.5 text-vip-orange" />
             <span className="hidden sm:inline">Print Etiket Group</span>
+          </button>
+
+          {/* Barcode / QR Label Button */}
+          <button
+            onClick={() => handleOpenBarcode(medicines[0])}
+            disabled={medicines.length === 0}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition ${
+              isLight
+                ? 'bg-white hover:bg-slate-100 text-slate-700 border-slate-300'
+                : 'bg-token-inner hover:bg-slate-700 text-token-emerald border-token-border hover:border-token-emerald'
+            }`}
+            title="Cetak Label Barcode & QR Thermal untuk Scanner Gun"
+          >
+            <QrCode className="w-3.5 h-3.5 text-token-emerald" />
+            <span className="hidden sm:inline">Cetak Label Barcode</span>
           </button>
 
           <button
@@ -461,6 +487,15 @@ export default function MedicinesView({ token, userRole, theme = 'dark', branch 
                       {/* Action buttons */}
                       <td className="py-2.5 px-3.5 text-right">
                         <div className="flex items-center justify-end gap-1">
+                          {/* Print Barcode / QR Label */}
+                          <button
+                            onClick={() => handleOpenBarcode(item)}
+                            className="p-1 rounded text-slate-400 hover:text-token-emerald hover:bg-slate-500/10 transition"
+                            title="Cetak Label Barcode & QR Thermal"
+                          >
+                            <QrCode className="w-3.5 h-3.5" />
+                          </button>
+
                           {/* Print Etiket Action */}
                           <button
                             onClick={() => handleOpenPrintSingle(item)}
@@ -528,6 +563,7 @@ export default function MedicinesView({ token, userRole, theme = 'dark', branch 
         isOpen={detailModalOpen}
         onClose={() => setDetailModalOpen(false)}
         onOpenPrint={(med) => handleOpenPrintSingle(med)}
+        onOpenBarcode={(med) => handleOpenBarcode(med)}
         theme={theme}
       />
 
@@ -554,6 +590,15 @@ export default function MedicinesView({ token, userRole, theme = 'dark', branch 
         onClose={() => setEtiketModalOpen(false)}
         medicine={etiketPrintTarget}
         medicinesList={medicines}
+        branch={branch}
+        theme={theme}
+      />
+
+      {/* Barcode & QR Thermal Label Modal */}
+      <ItemBarcodeLabelModal
+        isOpen={barcodeModalOpen}
+        onClose={() => setBarcodeModalOpen(false)}
+        medicine={barcodeTargetMedicine}
         branch={branch}
         theme={theme}
       />

@@ -1,8 +1,8 @@
 import React from 'react';
-import { X, Pill, ShieldCheck, MapPin, Package, Building2, Tag, Layers, DollarSign, AlertTriangle, CheckCircle2, Printer, Clock } from 'lucide-react';
+import { X, Pill, ShieldCheck, MapPin, Package, Building2, Tag, Layers, DollarSign, AlertTriangle, CheckCircle2, Printer, Clock, QrCode } from 'lucide-react';
 import ClassificationBadge from './ClassificationBadge';
 
-export default function MedicineDetailModal({ medicine, isOpen, onClose, onOpenPrint, theme = 'dark' }) {
+export default function MedicineDetailModal({ medicine, isOpen, onClose, onOpenPrint, onOpenBarcode, theme = 'dark' }) {
   if (!isOpen || !medicine) return null;
 
   const isLight = theme === 'light';
@@ -323,7 +323,25 @@ export default function MedicineDetailModal({ medicine, isOpen, onClose, onOpenP
         <div className={`p-3.5 px-5 border-t flex items-center justify-between shrink-0 ${
           isLight ? 'bg-slate-50 border-vip-navy-border' : 'bg-token-inner border-token-border'
         }`}>
-          <div>
+          <div className="flex items-center gap-2 flex-wrap">
+            {onOpenBarcode && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onOpenBarcode(medicine);
+                }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border transition ${
+                  isLight
+                    ? 'bg-white hover:bg-slate-100 text-slate-800 border-slate-300'
+                    : 'bg-token-card hover:bg-slate-700 text-token-emerald border-token-border'
+                }`}
+              >
+                <QrCode className="w-3.5 h-3.5" />
+                <span>Cetak Label Barcode / QR</span>
+              </button>
+            )}
+
             {onOpenPrint && (
               <button
                 type="button"
@@ -334,7 +352,7 @@ export default function MedicineDetailModal({ medicine, isOpen, onClose, onOpenP
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border transition ${
                   isLight
                     ? 'bg-white hover:bg-slate-100 text-vip-navy border-vip-navy-border'
-                    : 'bg-token-card hover:bg-slate-700 text-token-emerald border-token-border'
+                    : 'bg-token-card hover:bg-slate-700 text-slate-200 border-token-border'
                 }`}
               >
                 <Printer className="w-3.5 h-3.5" />

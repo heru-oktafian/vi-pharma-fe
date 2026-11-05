@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import {
   Search, RefreshCw, ArrowRightLeft, Warehouse, ShoppingCart,
   AlertTriangle, CheckCircle2, ChevronDown, ChevronRight,
-  Package, Calendar, BookOpen
+  Package, Calendar, BookOpen, QrCode
 } from 'lucide-react';
 import { getStockSummaries } from '../../services/inventoryApi';
 import RefillShelfModal from './RefillShelfModal';
+import ItemBarcodeLabelModal from '../master/ItemBarcodeLabelModal';
 
 export default function StockOverviewView({ token, userRole, theme = 'dark', branch, onOpenStockCard }) {
   const isLight = theme === 'light';
@@ -19,6 +20,10 @@ export default function StockOverviewView({ token, userRole, theme = 'dark', bra
   const [refillModalOpen, setRefillModalOpen] = useState(false);
   const [selectedBatch, setSelectedBatch] = useState(null);
   const [selectedMedicine, setSelectedMedicine] = useState(null);
+
+  // Barcode Label Modal State
+  const [barcodeModalOpen, setBarcodeModalOpen] = useState(false);
+  const [barcodeMedicine, setBarcodeMedicine] = useState(null);
 
   const loadData = async () => {
     try {
@@ -272,6 +277,24 @@ export default function StockOverviewView({ token, userRole, theme = 'dark', bra
                               </button>
                             )}
 
+                            {/* Barcode & Shelf Label Print */}
+                            <button
+                              onClick={() => {
+                                setBarcodeMedicine({
+                                  id: med.medicine_id,
+                                  item_code: med.item_code,
+                                  name: med.name,
+                                  base_unit_name: med.base_unit_name,
+                                  storage_location: med.storage_location || 'Rak Penjualan',
+                                });
+                                setBarcodeModalOpen(true);
+                              }}
+                              className="p-1 rounded-lg border border-slate-500/30 text-slate-400 hover:text-token-emerald hover:bg-slate-500/10 transition"
+                              title="Cetak Label Barcode & Rak"
+                            >
+                              <QrCode className="w-3.5 h-3.5" />
+                            </button>
+
                             {/* Stock Card Button */}
                             <button
                               onClick={() => onOpenStockCard?.(med.medicine_id, med.name)}
@@ -364,6 +387,15 @@ export default function StockOverviewView({ token, userRole, theme = 'dark', bra
         branchId={branch?.id}
         token={token}
         onSuccess={loadData}
+      />
+
+      {/* Barcode & Shelf Tag Print Modal */}
+      <ItemBarcodeLabelModal
+        isOpen={barcodeModalOpen}
+        onClose={() => setBarcodeModalOpen(false)}
+        medicine={barcodeMedicine}
+        branch={branch}
+        theme={theme}
       />
     </div>
   );
