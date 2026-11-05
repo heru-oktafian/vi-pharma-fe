@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   BarChart3, Users, DollarSign, TrendingUp, Award, Calendar, RefreshCw,
   ArrowLeft, Building2, HelpCircle, ArrowUpRight, Percent, Sparkles,
-  PieChart, CreditCard, Layers, Tag, ShieldCheck
+  PieChart, CreditCard, Layers, Tag, ShieldCheck, AlertCircle
 } from 'lucide-react';
 import {
   getStaffPerformanceReport,
@@ -229,6 +229,14 @@ export default function ReportsDashboard({ user, branch, token, theme, onBack })
           <span>Profitabilitas Kategori Obat</span>
         </button>
       </div>
+
+      {/* Error Alert */}
+      {errorMsg && (
+        <div className="p-3 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-xl flex items-center gap-2 text-xs">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          <span>{errorMsg}</span>
+        </div>
+      )}
 
       {/* Main Tab Content */}
       <div className="flex-1 min-h-0 flex flex-col gap-3 overflow-y-auto">
