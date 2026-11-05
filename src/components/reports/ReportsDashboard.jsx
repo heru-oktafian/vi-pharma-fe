@@ -2,12 +2,14 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   BarChart3, Users, DollarSign, TrendingUp, Award, Calendar, RefreshCw,
   ArrowLeft, Building2, HelpCircle, ArrowUpRight, Percent, Sparkles,
-  PieChart, CreditCard, Layers, Tag, ShieldCheck, AlertCircle
+  PieChart, CreditCard, Layers, Tag, ShieldCheck, AlertCircle, Save, CheckCircle2,
+  Eye, X
 } from 'lucide-react';
 import {
   getStaffPerformanceReport,
   getSalesSummaryReport,
-  getCategoryMarginsReport
+  getCategoryMarginsReport,
+  updateBranchBonusSetting
 } from '../../services/reportApi';
 
 export default function ReportsDashboard({ user, branch, token, theme, onBack }) {
@@ -26,9 +28,14 @@ export default function ReportsDashboard({ user, branch, token, theme, onBack })
     return new Date().toISOString().split('T')[0];
   });
 
-  // Staff Performance state & Bonus Pool Simulator
-  const [bonusPoolBudget, setBonusPoolBudget] = useState(5000000); // Rp 5.000.000 default simulator
-  const [targetMarginPercent, setTargetMarginPercent] = useState(0);
+  // Staff Performance state & Threshold Bonus Settings
+  const [dailyMarginTarget, setDailyMarginTarget] = useState(250000); // Default Rp 250.000 / hari
+  const [dailyBonusReward, setDailyBonusReward] = useState(50000);   // Default Rp 50.000 flat per hari tercapai
+  const [configInitialized, setConfigInitialized] = useState(false);
+  const [isSavingConfig, setIsSavingConfig] = useState(false);
+  const [saveSuccessMsg, setSaveSuccessMsg] = useState('');
+  const [selectedStaffDaily, setSelectedStaffDaily] = useState(null);
+
   const [staffData, setStaffData] = useState(null);
   const [salesData, setSalesData] = useState(null);
   const [categoryData, setCategoryData] = useState([]);
@@ -46,12 +53,17 @@ export default function ReportsDashboard({ user, branch, token, theme, onBack })
           {
             start_date: startDate,
             end_date: endDate,
-            bonus_pool: bonusPoolBudget,
-            target_margin: targetMarginPercent
+            daily_margin_target: dailyMarginTarget,
+            daily_bonus_reward: dailyBonusReward,
           },
           branchId
         );
         setStaffData(res);
+        if (res && !configInitialized) {
+          if (res.daily_margin_target) setDailyMarginTarget(res.daily_margin_target);
+          if (res.daily_bonus_reward) setDailyBonusReward(res.daily_bonus_reward);
+          setConfigInitialized(true);
+        }
       } else if (activeTab === 'sales') {
         const res = await getSalesSummaryReport(
           token,
@@ -73,7 +85,27 @@ export default function ReportsDashboard({ user, branch, token, theme, onBack })
     } finally {
       setLoading(false);
     }
-  }, [token, branchId, activeTab, startDate, endDate, bonusPoolBudget, targetMarginPercent]);
+  }, [token, branchId, activeTab, startDate, endDate, dailyMarginTarget, dailyBonusReward, configInitialized]);
+
+  const handleSaveBranchConfig = async () => {
+    setIsSavingConfig(true);
+    setSaveSuccessMsg('');
+    setErrorMsg('');
+    try {
+      await updateBranchBonusSetting(token, branchId, {
+        daily_margin_target: Number(dailyMarginTarget),
+        daily_bonus_reward: Number(dailyBonusReward),
+      });
+      setSaveSuccessMsg(`Konfigurasi target margin Rp ${Number(dailyMarginTarget).toLocaleString('id-ID')} & bonus Rp ${Number(dailyBonusReward).toLocaleString('id-ID')} berhasil disimpan untuk cabang ini.`);
+      setTimeout(() => setSaveSuccessMsg(''), 6000);
+      loadReports();
+    } catch (err) {
+      console.error('Failed to save branch bonus setting:', err);
+      setErrorMsg(err.message || 'Gagal menyimpan pengaturan bonus cabang');
+    } finally {
+      setIsSavingConfig(false);
+    }
+  };
 
   useEffect(() => {
     loadReports();
@@ -282,54 +314,109 @@ export default function ReportsDashboard({ user, branch, token, theme, onBack })
                 </div>
               </div>
 
-              <div className={`p-4 rounded-xl border ${isLight ? 'bg-white border-slate-200' : 'bg-slate-900 border-slate-800'}`}>
-                <div className="text-[11px] text-slate-400 flex items-center justify-between">
-                  <span>Rata-rata Markup Cabang</span>
-                  <Percent className="w-3.5 h-3.5 text-purple-400" />
+              <div className={`p-4 rounded-xl border-2 border-amber-500/40 ${isLight ? 'bg-amber-50/30 border-amber-200' : 'bg-amber-950/20 border-amber-500/30'}`}>
+                <div className="text-[11px] text-amber-400 font-bold flex items-center justify-between">
+                  <span>Total Bonus Penjualan Cabang</span>
+                  <Award className="w-3.5 h-3.5 text-amber-400" />
                 </div>
-                <div className="text-xl font-black text-purple-400 mt-1">
-                  {staffData?.average_branch_markup || 0}%
+                <div className="text-xl font-black text-amber-400 mt-1">
+                  Rp {(staffData?.total_bonus_paid || 0).toLocaleString('id-ID')}
                 </div>
-                <div className="text-[10px] text-slate-400 mt-0.5">Rasio laba terhadap modal</div>
+                <div className="text-[10px] text-slate-400 mt-0.5">Akumulasi bonus reward tercapai</div>
               </div>
             </div>
 
-            {/* Bonus Pool Simulator Box */}
+            {/* Target Margin & Daily Bonus Config Box */}
             <div
               className={`p-4 rounded-xl border space-y-3 ${
-                isLight ? 'bg-amber-50/50 border-amber-200' : 'bg-amber-950/15 border-amber-500/30'
+                isLight ? 'bg-amber-50/40 border-amber-200' : 'bg-amber-950/15 border-amber-500/30'
               }`}
             >
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center">
-                    <Sparkles className="w-4 h-4" />
+                <div className="flex items-start gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
+                    <Sparkles className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold text-slate-900 dark:text-white">
-                      Simulator Alokasi Bonus / Reward Kinerja Karyawan
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                      <span>Pengaturan Target Margin & Bonus Penjualan Cabang</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                        {branch?.branch_name || 'Apotek Vi-Pharma'}
+                      </span>
                     </h4>
-                    <p className="text-[11px] text-slate-400">
-                      Sistem menghitung pembagian bonus secara matematis berdasarkan <strong>% Kontribusi Value Margin Riil</strong> yang disumbangkan oleh masing-masing petugas.
+                    <p className="text-xs text-slate-400 mt-1 max-w-2xl leading-relaxed">
+                      Sistem menghitung bonus secara <strong>flat per hari</strong> untuk setiap personal kasir/apoteker yang berhasil menghasilkan margin harian <strong className="text-amber-400">≥ Target Margin</strong>. Jika penjualan melebihi target margin, bonus harian <strong>tetap flat (tidak bertambah)</strong>. Besaran target dan bonus dapat diatur manual dan disimpan per cabang apotek.
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-1.5 text-xs">
-                    <span className="text-slate-400">Anggaran Bonus (Rp):</span>
+                {/* Form Inputs for Branch Target & Bonus */}
+                <div className="flex flex-wrap items-end gap-3">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[11px] font-bold text-slate-400">
+                      Target Margin Harian / Petugas (Rp):
+                    </label>
                     <input
                       type="number"
-                      step="500000"
-                      value={bonusPoolBudget}
-                      onChange={(e) => setBonusPoolBudget(parseFloat(e.target.value) || 0)}
-                      className={`w-32 px-2.5 py-1 rounded-lg border text-xs font-bold text-right ${
-                        isLight ? 'bg-white border-slate-300 text-slate-900' : 'bg-slate-900 border-slate-700 text-emerald-400'
+                      step="50000"
+                      min="0"
+                      value={dailyMarginTarget}
+                      onChange={(e) => setDailyMarginTarget(parseFloat(e.target.value) || 0)}
+                      className={`w-40 px-3 py-1.5 rounded-xl border text-xs font-bold text-right transition ${
+                        isLight ? 'bg-white border-slate-300 text-slate-900 focus:border-amber-500' : 'bg-slate-900 border-slate-700 text-emerald-400 focus:border-amber-400'
                       }`}
                     />
                   </div>
+
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[11px] font-bold text-slate-400">
+                      Bonus per Hari Tercapai (Rp):
+                    </label>
+                    <input
+                      type="number"
+                      step="10000"
+                      min="0"
+                      value={dailyBonusReward}
+                      onChange={(e) => setDailyBonusReward(parseFloat(e.target.value) || 0)}
+                      className={`w-36 px-3 py-1.5 rounded-xl border text-xs font-bold text-right transition ${
+                        isLight ? 'bg-white border-slate-300 text-slate-900 focus:border-amber-500' : 'bg-slate-900 border-slate-700 text-amber-400 focus:border-amber-400'
+                      }`}
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={loadReports}
+                      className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-bold transition flex items-center gap-1.5"
+                      title="Hitung ulang dengan parameter target ini"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                      <span>Simulasikan</span>
+                    </button>
+
+                    <button
+                      onClick={handleSaveBranchConfig}
+                      disabled={isSavingConfig}
+                      className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 active:scale-95 text-slate-950 text-xs font-bold shadow-md transition flex items-center gap-1.5 disabled:opacity-50"
+                      title="Simpan target dan bonus ini permanen untuk cabang apotek ini"
+                    >
+                      {isSavingConfig ? (
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Save className="w-3.5 h-3.5" />
+                      )}
+                      <span>Simpan untuk Cabang Ini</span>
+                    </button>
+                  </div>
                 </div>
               </div>
+
+              {saveSuccessMsg && (
+                <div className="p-2.5 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 shrink-0" />
+                  <span>{saveSuccessMsg}</span>
+                </div>
+              )}
             </div>
 
             {/* Leaderboard & Contributor Table */}
@@ -366,22 +453,24 @@ export default function ReportsDashboard({ user, branch, token, theme, onBack })
                       <th className="py-3 px-4 text-center">% Omzet</th>
                       <th className="py-3 px-4 text-right">Modal (HPP)</th>
                       <th className="py-3 px-4 text-right font-black text-emerald-400">Value Margin Laba</th>
-                      <th className="py-3 px-4 text-center font-black text-emerald-400">% Kontribusi Margin</th>
-                      <th className="py-3 px-4 text-center text-purple-400">Markup Keuntungan</th>
-                      <th className="py-3 px-4 text-right font-bold text-amber-400">Estimasi Bonus</th>
+                      <th className="py-3 px-4 text-center font-black text-emerald-400">% Margin</th>
+                      <th className="py-3 px-4 text-center">Hari Kerja</th>
+                      <th className="py-3 px-4 text-center">Target Tercapai</th>
+                      <th className="py-3 px-4 text-right font-bold text-amber-400">Bonus Penjualan</th>
+                      <th className="py-3 px-4 text-center">Rincian</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200 dark:divide-slate-800/60">
                     {loading ? (
                       <tr>
-                        <td colSpan={10} className="p-8 text-center text-slate-400">
+                        <td colSpan={12} className="p-8 text-center text-slate-400">
                           <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-emerald-500" />
                           Menghitung kontribusi margin dan omzet petugas...
                         </td>
                       </tr>
                     ) : (staffData?.staff_contributions || []).length === 0 ? (
                       <tr>
-                        <td colSpan={10} className="p-8 text-center text-slate-400">
+                        <td colSpan={12} className="p-8 text-center text-slate-400">
                           Belum ada data transaksi penjualan atau pelayanan resep pada periode ini.
                         </td>
                       </tr>
@@ -458,21 +547,49 @@ export default function ReportsDashboard({ user, branch, token, theme, onBack })
                                 Rp {st.gross_margin.toLocaleString('id-ID')}
                               </td>
 
-                              {/* % Kontribusi Margin (Basis Utama Pembagian Bonus) */}
+                              {/* % Kontribusi Margin */}
                               <td className="py-3 px-4 text-center">
                                 <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
                                   {st.margin_contribution_percent}%
                                 </span>
                               </td>
 
-                              {/* Markup Keuntungan (%) */}
-                              <td className="py-3 px-4 text-center font-bold text-purple-400">
-                                +{st.markup_percent}%
+                              {/* Hari Kerja Aktif Bertransaksi */}
+                              <td className="py-3 px-4 text-center font-medium">
+                                {st.active_days_count || 1} hari
                               </td>
 
-                              {/* Estimasi Bonus (Rp) */}
-                              <td className="py-3 px-4 text-right font-black text-amber-400">
-                                Rp {(st.estimated_bonus || 0).toLocaleString('id-ID')}
+                              {/* Pencapaian Target Harian */}
+                              <td className="py-3 px-4 text-center">
+                                <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${
+                                  (st.days_achieved || 0) > 0
+                                    ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                                    : 'bg-slate-800 text-slate-400 border-slate-700'
+                                }`}>
+                                  {(st.days_achieved || 0) > 0 && <CheckCircle2 className="w-3 h-3 text-emerald-400" />}
+                                  <span>{st.days_achieved || 0} hari tercapai</span>
+                                </span>
+                              </td>
+
+                              {/* Bonus Penjualan Flat Tercapai (Rp) */}
+                              <td className="py-3 px-4 text-right">
+                                <div className="font-black text-amber-400 text-sm">
+                                  Rp {(st.total_bonus || 0).toLocaleString('id-ID')}
+                                </div>
+                                <div className="text-[10px] text-slate-400">
+                                  {st.days_achieved || 0} hr x Rp {(st.daily_bonus_reward || dailyBonusReward).toLocaleString('id-ID')}
+                                </div>
+                              </td>
+
+                              {/* Tombol Lihat Rincian Harian */}
+                              <td className="py-3 px-4 text-center">
+                                <button
+                                  onClick={() => setSelectedStaffDaily(st)}
+                                  className="p-1.5 rounded-lg border bg-slate-800/80 hover:bg-slate-700 text-slate-300 border-slate-700 transition inline-flex items-center justify-center"
+                                  title="Lihat rincian pencapaian target per tanggal"
+                                >
+                                  <Eye className="w-3.5 h-3.5" />
+                                </button>
                               </td>
                             </tr>
                           );
@@ -630,6 +747,141 @@ export default function ReportsDashboard({ user, branch, token, theme, onBack })
           </div>
         )}
       </div>
+
+      {/* Daily Breakdown Modal */}
+      {selectedStaffDaily && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
+          <div
+            className={`w-full max-w-3xl max-h-[85vh] rounded-2xl border flex flex-col overflow-hidden shadow-2xl ${
+              isLight ? 'bg-white border-slate-200 text-slate-900' : 'bg-slate-900 border-slate-800 text-white'
+            }`}
+          >
+            {/* Modal Header */}
+            <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-bold flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-amber-400" />
+                  <span>Rincian Pencapaian Target Harian & Bonus Petugas</span>
+                </h3>
+                <div className="flex items-center gap-2 text-xs text-slate-400 mt-1">
+                  <span className="font-bold text-slate-200">{selectedStaffDaily.user_name}</span>
+                  <span>•</span>
+                  <span className="uppercase text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300">
+                    Role: {selectedStaffDaily.user_role}
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedStaffDaily(null)}
+                className="p-1.5 rounded-lg border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal Summary Stats */}
+            <div className="p-4 border-b border-slate-800 bg-slate-950/30 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+              <div className="p-2.5 rounded-xl border border-slate-800 bg-slate-900/60">
+                <div className="text-[10px] text-slate-400">Total Hari Kerja</div>
+                <div className="text-base font-black text-slate-200 mt-0.5">
+                  {selectedStaffDaily.active_days_count || 1} Hari
+                </div>
+              </div>
+
+              <div className="p-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10">
+                <div className="text-[10px] text-emerald-400 font-bold">Hari Target Tercapai</div>
+                <div className="text-base font-black text-emerald-400 mt-0.5">
+                  {selectedStaffDaily.days_achieved || 0} Hari
+                </div>
+              </div>
+
+              <div className="p-2.5 rounded-xl border border-slate-800 bg-slate-900/60">
+                <div className="text-[10px] text-slate-400">Target Margin / Hari</div>
+                <div className="text-base font-black text-slate-200 mt-0.5">
+                  Rp {(selectedStaffDaily.daily_target_margin || dailyMarginTarget).toLocaleString('id-ID')}
+                </div>
+              </div>
+
+              <div className="p-2.5 rounded-xl border border-amber-500/30 bg-amber-500/10">
+                <div className="text-[10px] text-amber-400 font-bold">Total Bonus Periode</div>
+                <div className="text-base font-black text-amber-400 mt-0.5">
+                  Rp {(selectedStaffDaily.total_bonus || 0).toLocaleString('id-ID')}
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Table Body */}
+            <div className="flex-1 overflow-y-auto p-4">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-800 text-[11px] font-bold text-slate-400 uppercase">
+                    <th className="py-2.5 px-3">Tanggal</th>
+                    <th className="py-2.5 px-3 text-center">Trx</th>
+                    <th className="py-2.5 px-3 text-right">Omzet</th>
+                    <th className="py-2.5 px-3 text-right">Modal (HPP)</th>
+                    <th className="py-2.5 px-3 text-right text-emerald-400">Margin Laba Riil</th>
+                    <th className="py-2.5 px-3 text-center">Status Target</th>
+                    <th className="py-2.5 px-3 text-right text-amber-400">Bonus Harian</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/60">
+                  {(!selectedStaffDaily.daily_breakdown || selectedStaffDaily.daily_breakdown.length === 0) ? (
+                    <tr>
+                      <td colSpan={7} className="py-8 text-center text-slate-400">
+                        Tidak ada histori transaksi harian pada periode ini.
+                      </td>
+                    </tr>
+                  ) : (
+                    selectedStaffDaily.daily_breakdown.map((item, idx) => (
+                      <tr key={idx} className="hover:bg-slate-800/40">
+                        <td className="py-2.5 px-3 font-mono font-medium">{item.date}</td>
+                        <td className="py-2.5 px-3 text-center font-mono">{item.transactions}</td>
+                        <td className="py-2.5 px-3 text-right">Rp {item.total_revenue.toLocaleString('id-ID')}</td>
+                        <td className="py-2.5 px-3 text-right text-slate-400">Rp {item.total_cogs.toLocaleString('id-ID')}</td>
+                        <td className="py-2.5 px-3 text-right font-black text-emerald-400">
+                          Rp {item.gross_margin.toLocaleString('id-ID')}
+                        </td>
+                        <td className="py-2.5 px-3 text-center">
+                          <span
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black border ${
+                              item.target_achieved
+                                ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                                : 'bg-slate-800 text-slate-400 border-slate-700'
+                            }`}
+                          >
+                            {item.target_achieved ? (
+                              <>
+                                <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                                <span>TERCAPAI</span>
+                              </>
+                            ) : (
+                              <span>BELUM</span>
+                            )}
+                          </span>
+                        </td>
+                        <td className="py-2.5 px-3 text-right font-bold text-amber-400">
+                          Rp {item.bonus_earned.toLocaleString('id-ID')}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-3 border-t border-slate-800 bg-slate-950/40 flex items-center justify-between text-xs text-slate-400">
+              <span>*Bonus harian bersifat flat dan tidak bertambah meskipun margin harian melampaui target.</span>
+              <button
+                onClick={() => setSelectedStaffDaily(null)}
+                className="px-4 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold transition"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
