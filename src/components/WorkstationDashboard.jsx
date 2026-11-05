@@ -10,6 +10,7 @@ import InventoryDashboard from './inventory/InventoryDashboard';
 import ProcurementDashboard from './procurement/ProcurementDashboard';
 import POSDashboard from './pos/POSDashboard';
 import PrescriptionDashboard from './prescription/PrescriptionDashboard';
+import ReportsDashboard from './reports/ReportsDashboard';
 
 export default function WorkstationDashboard({ user, branch, token, theme = 'dark', onToggleTheme, onSwitchBranch, onLogout, onRemoteLogout }) {
   const [branchDetail, setBranchDetail] = useState(null);
@@ -246,6 +247,14 @@ export default function WorkstationDashboard({ user, branch, token, theme = 'dar
           />
         ) : activeModule === 'resep' ? (
           <PrescriptionDashboard
+            user={user}
+            branch={branch}
+            token={token}
+            theme={theme}
+            onBack={() => setActiveModule(null)}
+          />
+        ) : activeModule === 'laporan' ? (
+          <ReportsDashboard
             user={user}
             branch={branch}
             token={token}
