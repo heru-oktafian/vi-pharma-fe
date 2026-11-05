@@ -5,6 +5,7 @@ import { createMedicine, updateMedicine } from '../../services/masterDataApi';
 
 const DOSAGE_FORMS = [
   'Tablet', 'Kaplet', 'Kapsul', 'Sirup', 'Suspensi', 'Salep', 'Krim', 'Gel',
+  'Cairan Obat Luar', 'Larutan', 'Minyak / Balsem Cair', 'Emulsi',
   'Injeksi', 'Infus', 'Tetes Mata', 'Tetes Telinga', 'Tetes Hidung', 'Inhaler',
   'Suppositoria', 'Serbuk / Puyer', 'Sachet', 'Plester / Patch', 'Alat Kesehatan'
 ];
