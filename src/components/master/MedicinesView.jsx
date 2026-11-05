@@ -76,9 +76,12 @@ export default function MedicinesView({ token, userRole, theme = 'dark', branch 
         category_id: categoryFilter || undefined,
       };
       const res = await getMedicines(params, token);
-      if (res && Array.isArray(res.items)) {
+      if (res && Array.isArray(res.data)) {
+        setMedicines(res.data);
+        setTotalCount(res.total_items ?? res.total ?? res.data.length);
+      } else if (res && Array.isArray(res.items)) {
         setMedicines(res.items);
-        setTotalCount(res.total || res.items.length);
+        setTotalCount(res.total ?? res.items.length);
       } else if (Array.isArray(res)) {
         setMedicines(res);
         setTotalCount(res.length);
