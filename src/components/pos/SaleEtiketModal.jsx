@@ -16,13 +16,15 @@ export default function SaleEtiketModal({
   const isLight = theme === 'light';
   const items = sale.items || [];
 
+  const getItemKey = (it, idx) => it.id || it.medicine_id || `item-${idx}`;
+
   // Patient & Header Info
   const [patientName, setPatientName] = useState(sale.customer_name || 'Pelanggan Umum');
   const [patientAge, setPatientAge] = useState('');
   const [receiptNo, setReceiptNo] = useState(sale.invoice_number || '');
 
   // Checked item IDs for printing
-  const [selectedIds, setSelectedIds] = useState(() => items.map(it => it.id));
+  const [selectedIds, setSelectedIds] = useState(() => items.map((it, idx) => getItemKey(it, idx)));
 
   // Custom signa / instructions overrides per item
   const [signaOverrides, setSignaOverrides] = useState({});
@@ -32,7 +34,7 @@ export default function SaleEtiketModal({
     if (sale) {
       setPatientName(sale.customer_name || 'Pelanggan Umum');
       setReceiptNo(sale.invoice_number || '');
-      setSelectedIds(items.map(it => it.id));
+      setSelectedIds(items.map((it, idx) => getItemKey(it, idx)));
     }
   }, [sale]);
 
@@ -42,7 +44,7 @@ export default function SaleEtiketModal({
     if (allSelected) {
       setSelectedIds([]);
     } else {
-      setSelectedIds(items.map(it => it.id));
+      setSelectedIds(items.map((it, idx) => getItemKey(it, idx)));
     }
   };
 
@@ -64,10 +66,10 @@ export default function SaleEtiketModal({
   const branchSia = branch?.sia_id || sale.branch?.sia_id || 'SIA-101/2026';
   const branchSipa = branch?.sipa_id || 'apt. Hendra, S.Farm';
 
-  const selectedItems = items.filter(it => selectedIds.includes(it.id));
+  const selectedItems = items.filter((it, idx) => selectedIds.includes(getItemKey(it, idx)));
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-xs animate-fadeIn">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-xs animate-fadeIn">
       {/* Print Stylesheet targeting thermal labels */}
       <style>{`
         @media print {
@@ -221,15 +223,16 @@ export default function SaleEtiketModal({
                 </div>
               ) : (
                 items.map((it, idx) => {
-                  const isChecked = selectedIds.includes(it.id);
+                  const itemKey = getItemKey(it, idx);
+                  const isChecked = selectedIds.includes(itemKey);
                   const med = it.medicine || {};
                   const isLuar = (med.label_type || '').toLowerCase() === 'luar';
-                  const currentSigna = signaOverrides[it.id] ?? (med.default_signa || '3 x Sehari 1 Tablet');
-                  const currentTime = timeOverrides[it.id] ?? (med.consumption_time || 'Sesudah Makan');
+                  const currentSigna = signaOverrides[itemKey] ?? (med.default_signa || '3 x Sehari 1 Tablet');
+                  const currentTime = timeOverrides[itemKey] ?? (med.consumption_time || 'Sesudah Makan');
 
                   return (
                     <div
-                      key={it.id || idx}
+                      key={itemKey}
                       className={`p-3 rounded-xl border transition-all ${
                         isChecked
                           ? isLight
@@ -241,7 +244,7 @@ export default function SaleEtiketModal({
                       }`}
                     >
                       {/* Checkbox & Name Header */}
-                      <div className="flex items-start gap-2.5 cursor-pointer" onClick={() => toggleSelectItem(it.id)}>
+                      <div className="flex items-start gap-2.5 cursor-pointer" onClick={() => toggleSelectItem(itemKey)}>
                         <button
                           type="button"
                           className="mt-0.5 text-blue-500 focus:outline-hidden"
@@ -253,7 +256,7 @@ export default function SaleEtiketModal({
                           )}
                         </button>
                         <div className="flex-1 min-w-0">
-                          <span className="text-xs font-bold block truncate text-white">
+                          <span className={`text-xs font-bold block truncate ${isLight ? 'text-slate-900' : 'text-white'}`}>
                             {med.name || it.medicine_id}
                           </span>
                           <div className="flex items-center gap-1.5 mt-0.5">
@@ -279,7 +282,7 @@ export default function SaleEtiketModal({
                             <input
                               type="text"
                               value={currentSigna}
-                              onChange={(e) => setSignaOverrides({ ...signaOverrides, [it.id]: e.target.value })}
+                              onChange={(e) => setSignaOverrides({ ...signaOverrides, [itemKey]: e.target.value })}
                               className={`w-full px-2 py-1 text-[11px] rounded border font-mono ${
                                 isLight ? 'bg-white border-slate-300' : 'bg-token-inner border-token-border text-slate-100'
                               }`}
@@ -290,7 +293,7 @@ export default function SaleEtiketModal({
                             <input
                               type="text"
                               value={currentTime}
-                              onChange={(e) => setTimeOverrides({ ...timeOverrides, [it.id]: e.target.value })}
+                              onChange={(e) => setTimeOverrides({ ...timeOverrides, [itemKey]: e.target.value })}
                               className={`w-full px-2 py-1 text-[11px] rounded border font-mono ${
                                 isLight ? 'bg-white border-slate-300' : 'bg-token-inner border-token-border text-slate-100'
                               }`}

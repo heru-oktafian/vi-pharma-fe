@@ -1,10 +1,12 @@
-import React from 'react';
-import { X, Printer, CheckCircle2, Store, Phone, Calendar, User, Hash } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, Printer, CheckCircle2, Store, Phone, Calendar, User, Hash, Tag } from 'lucide-react';
+import SaleEtiketModal from './SaleEtiketModal';
 
-export default function ReceiptPrintModal({ isOpen, onClose, sale, branch, theme = 'dark' }) {
+export default function ReceiptPrintModal({ isOpen, onClose, sale, branch, theme = 'dark', onOpenEtiket }) {
   if (!isOpen || !sale) return null;
 
   const isLight = theme === 'light';
+  const [showEtiketModal, setShowEtiketModal] = useState(false);
 
   const formatIDR = (val) => {
     return new Intl.NumberFormat('id-ID', {
@@ -28,7 +30,8 @@ export default function ReceiptPrintModal({ isOpen, onClose, sale, branch, theme
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-xs animate-fadeIn">
       {/* Thermal Print CSS for POS Receipt (58mm / 80mm) */}
-      <style>{`
+      {!showEtiketModal && (
+        <style>{`
         @media print {
           @page {
             size: 58mm auto;
@@ -67,6 +70,7 @@ export default function ReceiptPrintModal({ isOpen, onClose, sale, branch, theme
           }
         }
       `}</style>
+      )}
 
       {/* Modal Dialog Container */}
       <div className={`w-full max-w-md max-h-[95vh] flex flex-col rounded-2xl border shadow-2xl overflow-hidden transition-all ${
@@ -180,7 +184,7 @@ export default function ReceiptPrintModal({ isOpen, onClose, sale, branch, theme
         </div>
 
         {/* Footer Actions */}
-        <div className={`p-3.5 px-5 border-t flex items-center justify-between shrink-0 ${
+        <div className={`p-3.5 px-5 border-t flex flex-wrap items-center justify-between gap-2.5 shrink-0 ${
           isLight ? 'bg-slate-50 border-slate-200' : 'bg-token-inner border-token-border'
         }`}>
           <button
@@ -193,14 +197,32 @@ export default function ReceiptPrintModal({ isOpen, onClose, sale, branch, theme
             Tutup
           </button>
 
-          <button
-            type="button"
-            onClick={handlePrint}
-            className="flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-bold bg-token-emerald hover:bg-token-emerald-dark text-slate-950 transition shadow-md"
-          >
-            <Printer className="w-4 h-4" />
-            <span>Cetak Struk (Thermal 58mm/80mm)</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                if (onOpenEtiket) {
+                  onOpenEtiket(sale);
+                } else {
+                  setShowEtiketModal(true);
+                }
+              }}
+              className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white transition shadow-md"
+              title="Cetak Etiket Aturan Pakai Obat Farmasi"
+            >
+              <Tag className="w-4 h-4" />
+              <span>Cetak Etiket</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handlePrint}
+              className="flex items-center gap-2 px-4 sm:px-5 py-2 rounded-xl text-xs font-bold bg-token-emerald hover:bg-token-emerald-dark text-slate-950 transition shadow-md"
+            >
+              <Printer className="w-4 h-4" />
+              <span>Cetak Struk (Thermal 58mm/80mm)</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -260,6 +282,17 @@ export default function ReceiptPrintModal({ isOpen, onClose, sale, branch, theme
           <div>Simpan struk ini sebagai bukti pembayaran sah</div>
         </div>
       </div>
+
+      {/* Sale Etiket Modal */}
+      {showEtiketModal && (
+        <SaleEtiketModal
+          isOpen={showEtiketModal}
+          onClose={() => setShowEtiketModal(false)}
+          sale={sale}
+          branch={branch}
+          theme={theme}
+        />
+      )}
     </div>
   );
 }
