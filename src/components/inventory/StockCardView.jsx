@@ -13,13 +13,22 @@ export default function StockCardView({ token, userRole, theme = 'dark', branch,
   const [mutations, setMutations] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  // Sync initialMedicineId when passed from parent tabs
+  useEffect(() => {
+    if (initialMedicineId) {
+      setSelectedMedicineId(initialMedicineId);
+    }
+  }, [initialMedicineId]);
+
   // Load medicine list for dropdown
   useEffect(() => {
     async function loadMeds() {
       try {
         const res = await getStockSummaries(token, '', branch?.id);
         setMedicines(res || []);
-        if (!selectedMedicineId && res?.length > 0) {
+        if (initialMedicineId) {
+          setSelectedMedicineId(initialMedicineId);
+        } else if (!selectedMedicineId && res?.length > 0) {
           setSelectedMedicineId(res[0].medicine_id);
         }
       } catch (err) {
@@ -27,14 +36,20 @@ export default function StockCardView({ token, userRole, theme = 'dark', branch,
       }
     }
     loadMeds();
-  }, [token, branch?.id]);
+  }, [token, branch?.id, initialMedicineId]);
 
   const loadStockCard = async () => {
     if (!selectedMedicineId) return;
     try {
       setLoading(true);
-      const res = await getStockCard(selectedMedicineId, token, startDate, endDate, branch?.id);
-      setMutations(res || []);
+      const [resMutations, resMeds] = await Promise.all([
+        getStockCard(selectedMedicineId, token, startDate, endDate, branch?.id),
+        getStockSummaries(token, '', branch?.id).catch(() => []),
+      ]);
+      setMutations(resMutations || []);
+      if (resMeds && resMeds.length > 0) {
+        setMedicines(resMeds);
+      }
     } catch (err) {
       console.error('Failed to load stock card mutations:', err);
     } finally {
@@ -128,6 +143,16 @@ export default function StockCardView({ token, userRole, theme = 'dark', branch,
               <span className="text-[9px] text-slate-400 block leading-tight">Total Gabungan</span>
               <span className="text-xs font-mono font-extrabold text-blue-400">{selectedMedObj.total_stock || 0}</span>
             </div>
+            <button
+              onClick={loadStockCard}
+              disabled={loading}
+              className={`p-2 rounded-lg border transition ${
+                isLight ? 'bg-white hover:bg-slate-100 text-slate-700 border-slate-300' : 'bg-token-card hover:bg-slate-700 text-slate-300 border-token-border'
+              }`}
+              title="Refresh Kartu Stok"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-token-emerald' : ''}`} />
+            </button>
           </div>
         )}
       </div>
