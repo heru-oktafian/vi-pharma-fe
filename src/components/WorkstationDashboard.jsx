@@ -8,6 +8,7 @@ import { getBranchDetail } from '../services/api';
 import MasterDataDashboard from './master/MasterDataDashboard';
 import InventoryDashboard from './inventory/InventoryDashboard';
 import ProcurementDashboard from './procurement/ProcurementDashboard';
+import POSDashboard from './pos/POSDashboard';
 
 export default function WorkstationDashboard({ user, branch, token, theme = 'dark', onToggleTheme, onSwitchBranch, onLogout, onRemoteLogout }) {
   const [branchDetail, setBranchDetail] = useState(null);
@@ -228,6 +229,14 @@ export default function WorkstationDashboard({ user, branch, token, theme = 'dar
           />
         ) : activeModule === 'pengadaan' ? (
           <ProcurementDashboard
+            user={user}
+            branch={branch}
+            token={token}
+            theme={theme}
+            onBack={() => setActiveModule(null)}
+          />
+        ) : (activeModule === 'pos' || activeModule === 'kasir') ? (
+          <POSDashboard
             user={user}
             branch={branch}
             token={token}
