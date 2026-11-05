@@ -3,7 +3,7 @@ import {
   BarChart3, Users, DollarSign, TrendingUp, Award, Calendar, RefreshCw,
   ArrowLeft, Building2, HelpCircle, ArrowUpRight, Percent, Sparkles,
   PieChart, CreditCard, Layers, Tag, ShieldCheck, AlertCircle, Save, CheckCircle2,
-  Eye, X
+  Eye, X, Lock
 } from 'lucide-react';
 import {
   getStaffPerformanceReport,
@@ -15,6 +15,10 @@ import {
 export default function ReportsDashboard({ user, branch, token, theme, onBack }) {
   const isLight = theme === 'light';
   const branchId = branch?.id || 'CBG000000000001';
+
+  // Role authority check: only superadmin & admin have full authority to edit branch targets/bonuses
+  const userRole = (user?.user_role || user?.role || '').toLowerCase();
+  const hasFullAuthority = userRole === 'superadmin' || userRole === 'admin';
 
   // Active Tab: 'staff' | 'sales' | 'categories'
   const [activeTab, setActiveTab] = useState('staff');
@@ -343,9 +347,23 @@ export default function ReportsDashboard({ user, branch, token, theme, onBack })
                       <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                         {branch?.branch_name || 'Apotek Vi-Pharma'}
                       </span>
+                      {hasFullAuthority ? (
+                        <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center gap-1">
+                          <ShieldCheck className="w-3 h-3" /> Otoritas Penuh
+                        </span>
+                      ) : (
+                        <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-slate-800 text-slate-400 border border-slate-700 flex items-center gap-1">
+                          <Lock className="w-3 h-3 text-amber-400" /> Terkunci (Hanya Pemilik Otoritas)
+                        </span>
+                      )}
                     </h4>
                     <p className="text-xs text-slate-400 mt-1 max-w-2xl leading-relaxed">
-                      Sistem menghitung bonus secara <strong>flat per hari</strong> untuk setiap personal kasir/apoteker yang berhasil menghasilkan margin harian <strong className="text-amber-400">≥ Target Margin</strong>. Jika penjualan melebihi target margin, bonus harian <strong>tetap flat (tidak bertambah)</strong>. Besaran target dan bonus dapat diatur manual dan disimpan per cabang apotek.
+                      Sistem menghitung bonus secara <strong>flat per hari</strong> untuk setiap personal kasir/apoteker yang berhasil menghasilkan margin harian <strong className="text-amber-400">≥ Target Margin</strong>. Jika penjualan melebihi target margin, bonus harian <strong>tetap flat (tidak bertambah)</strong>.
+                      {!hasFullAuthority && (
+                        <span className="block text-[11px] text-amber-400/90 font-medium mt-1">
+                          *Pengaturan target dan bonus dikunci. Hanya pemilik otoritas penuh (Superadmin / Admin) yang dapat mengubah nilai ini.
+                        </span>
+                      )}
                     </p>
                   </div>
                 </div>
@@ -353,60 +371,88 @@ export default function ReportsDashboard({ user, branch, token, theme, onBack })
                 {/* Form Inputs for Branch Target & Bonus */}
                 <div className="flex flex-wrap items-end gap-3">
                   <div className="flex flex-col gap-1">
-                    <label className="text-[11px] font-bold text-slate-400">
-                      Target Margin Harian / Petugas (Rp):
+                    <label className="text-[11px] font-bold text-slate-400 flex items-center gap-1">
+                      {!hasFullAuthority && <Lock className="w-3 h-3 text-slate-500" />}
+                      <span>Target Margin Harian / Petugas (Rp):</span>
                     </label>
                     <input
                       type="number"
                       step="50000"
                       min="0"
+                      disabled={!hasFullAuthority}
+                      readOnly={!hasFullAuthority}
                       value={dailyMarginTarget}
-                      onChange={(e) => setDailyMarginTarget(parseFloat(e.target.value) || 0)}
+                      onChange={(e) => hasFullAuthority && setDailyMarginTarget(parseFloat(e.target.value) || 0)}
+                      title={!hasFullAuthority ? "Hanya pemilik otoritas penuh yang dapat mengubah nilai ini" : undefined}
                       className={`w-40 px-3 py-1.5 rounded-xl border text-xs font-bold text-right transition ${
-                        isLight ? 'bg-white border-slate-300 text-slate-900 focus:border-amber-500' : 'bg-slate-900 border-slate-700 text-emerald-400 focus:border-amber-400'
+                        !hasFullAuthority
+                          ? 'bg-slate-900/50 border-slate-800 text-slate-400 cursor-not-allowed opacity-80 select-none'
+                          : isLight
+                          ? 'bg-white border-slate-300 text-slate-900 focus:border-amber-500'
+                          : 'bg-slate-900 border-slate-700 text-emerald-400 focus:border-amber-400'
                       }`}
                     />
                   </div>
 
                   <div className="flex flex-col gap-1">
-                    <label className="text-[11px] font-bold text-slate-400">
-                      Bonus per Hari Tercapai (Rp):
+                    <label className="text-[11px] font-bold text-slate-400 flex items-center gap-1">
+                      {!hasFullAuthority && <Lock className="w-3 h-3 text-slate-500" />}
+                      <span>Bonus per Hari Tercapai (Rp):</span>
                     </label>
                     <input
                       type="number"
                       step="10000"
                       min="0"
+                      disabled={!hasFullAuthority}
+                      readOnly={!hasFullAuthority}
                       value={dailyBonusReward}
-                      onChange={(e) => setDailyBonusReward(parseFloat(e.target.value) || 0)}
+                      onChange={(e) => hasFullAuthority && setDailyBonusReward(parseFloat(e.target.value) || 0)}
+                      title={!hasFullAuthority ? "Hanya pemilik otoritas penuh yang dapat mengubah nilai ini" : undefined}
                       className={`w-36 px-3 py-1.5 rounded-xl border text-xs font-bold text-right transition ${
-                        isLight ? 'bg-white border-slate-300 text-slate-900 focus:border-amber-500' : 'bg-slate-900 border-slate-700 text-amber-400 focus:border-amber-400'
+                        !hasFullAuthority
+                          ? 'bg-slate-900/50 border-slate-800 text-slate-400 cursor-not-allowed opacity-80 select-none'
+                          : isLight
+                          ? 'bg-white border-slate-300 text-slate-900 focus:border-amber-500'
+                          : 'bg-slate-900 border-slate-700 text-amber-400 focus:border-amber-400'
                       }`}
                     />
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <button
-                      onClick={loadReports}
-                      className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-bold transition flex items-center gap-1.5"
-                      title="Hitung ulang dengan parameter target ini"
-                    >
-                      <RefreshCw className="w-3.5 h-3.5" />
-                      <span>Simulasikan</span>
-                    </button>
+                    {hasFullAuthority ? (
+                      <>
+                        <button
+                          onClick={loadReports}
+                          className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-bold transition flex items-center gap-1.5"
+                          title="Hitung ulang dengan parameter target ini"
+                        >
+                          <RefreshCw className="w-3.5 h-3.5" />
+                          <span>Simulasikan</span>
+                        </button>
 
-                    <button
-                      onClick={handleSaveBranchConfig}
-                      disabled={isSavingConfig}
-                      className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 active:scale-95 text-slate-950 text-xs font-bold shadow-md transition flex items-center gap-1.5 disabled:opacity-50"
-                      title="Simpan target dan bonus ini permanen untuk cabang apotek ini"
-                    >
-                      {isSavingConfig ? (
-                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                      ) : (
-                        <Save className="w-3.5 h-3.5" />
-                      )}
-                      <span>Simpan untuk Cabang Ini</span>
-                    </button>
+                        <button
+                          onClick={handleSaveBranchConfig}
+                          disabled={isSavingConfig}
+                          className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 active:scale-95 text-slate-950 text-xs font-bold shadow-md transition flex items-center gap-1.5 disabled:opacity-50"
+                          title="Simpan target dan bonus ini permanen untuk cabang apotek ini"
+                        >
+                          {isSavingConfig ? (
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <Save className="w-3.5 h-3.5" />
+                          )}
+                          <span>Simpan untuk Cabang Ini</span>
+                        </button>
+                      </>
+                    ) : (
+                      <div
+                        className="px-3 py-1.5 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-400 text-xs font-medium flex items-center gap-1.5 cursor-not-allowed select-none"
+                        title="Pengaturan dikunci. Hanya pemilik otoritas penuh yang dapat mengubah target dan bonus cabang ini."
+                      >
+                        <Lock className="w-3.5 h-3.5 text-amber-400" />
+                        <span>Terkunci</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
