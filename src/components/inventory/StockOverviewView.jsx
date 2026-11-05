@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import {
   Search, RefreshCw, ArrowRightLeft, Warehouse, ShoppingCart,
   AlertTriangle, CheckCircle2, ChevronDown, ChevronRight,
-  Package, Calendar, BookOpen, QrCode
+  Package, Calendar, BookOpen, QrCode, Layers, PlusCircle
 } from 'lucide-react';
 import { getStockSummaries } from '../../services/inventoryApi';
 import RefillShelfModal from './RefillShelfModal';
+import InitialStockModal from './InitialStockModal';
 import ItemBarcodeLabelModal from '../master/ItemBarcodeLabelModal';
 
 export default function StockOverviewView({ token, userRole, theme = 'dark', branch, onOpenStockCard }) {
@@ -20,6 +21,10 @@ export default function StockOverviewView({ token, userRole, theme = 'dark', bra
   const [refillModalOpen, setRefillModalOpen] = useState(false);
   const [selectedBatch, setSelectedBatch] = useState(null);
   const [selectedMedicine, setSelectedMedicine] = useState(null);
+
+  // Initial Stock Modal State
+  const [initialStockModalOpen, setInitialStockModalOpen] = useState(false);
+  const [initialStockMed, setInitialStockMed] = useState(null);
 
   // Barcode Label Modal State
   const [barcodeModalOpen, setBarcodeModalOpen] = useState(false);
@@ -132,6 +137,19 @@ export default function StockOverviewView({ token, userRole, theme = 'dark', bra
             title="Muat Ulang"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+          </button>
+
+          {/* Quick Input Saldo Awal / Batch Baru */}
+          <button
+            onClick={() => {
+              setInitialStockMed(null);
+              setInitialStockModalOpen(true);
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white shadow-xs transition whitespace-nowrap ml-1.5"
+            title="Input Saldo Awal / Batch Baru Obat"
+          >
+            <PlusCircle className="w-3.5 h-3.5" />
+            <span>+ Saldo Awal Batch</span>
           </button>
         </div>
       </div>
@@ -277,6 +295,23 @@ export default function StockOverviewView({ token, userRole, theme = 'dark', bra
                               </button>
                             )}
 
+                            {/* Input Saldo Awal / Batch Baru for this medicine */}
+                            <button
+                              onClick={() => {
+                                setInitialStockMed({
+                                  id: med.medicine_id,
+                                  name: med.name,
+                                  item_code: med.item_code,
+                                  base_unit_name: med.base_unit_name,
+                                });
+                                setInitialStockModalOpen(true);
+                              }}
+                              className="p-1 rounded-lg border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 transition"
+                              title="Input Saldo Awal / Tambah Batch Baru"
+                            >
+                              <Layers className="w-3.5 h-3.5" />
+                            </button>
+
                             {/* Barcode & Shelf Label Print */}
                             <button
                               onClick={() => {
@@ -318,8 +353,23 @@ export default function StockOverviewView({ token, userRole, theme = 'dark', bra
                               </div>
 
                               {batches.length === 0 ? (
-                                <div className="p-3 text-center text-xs text-slate-500">
-                                  Belum ada catatan batch masuk untuk obat ini.
+                                <div className="p-4 text-center text-xs text-slate-400">
+                                  <p className="mb-2">Obat ini belum memiliki batch fisik terdaftar di rak maupun gudang.</p>
+                                  <button
+                                    onClick={() => {
+                                      setInitialStockMed({
+                                        id: med.medicine_id,
+                                        name: med.name,
+                                        item_code: med.item_code,
+                                        base_unit_name: med.base_unit_name,
+                                      });
+                                      setInitialStockModalOpen(true);
+                                    }}
+                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white shadow-xs transition"
+                                  >
+                                    <PlusCircle className="w-3.5 h-3.5" />
+                                    <span>Input Saldo Awal Batch Sekarang</span>
+                                  </button>
                                 </div>
                               ) : (
                                 <table className="w-full text-xs">
@@ -396,6 +446,19 @@ export default function StockOverviewView({ token, userRole, theme = 'dark', bra
         medicine={barcodeMedicine}
         branch={branch}
         theme={theme}
+      />
+
+      {/* Initial Stock / Batch Modal */}
+      <InitialStockModal
+        isOpen={initialStockModalOpen}
+        onClose={() => setInitialStockModalOpen(false)}
+        token={token}
+        branch={branch}
+        theme={theme}
+        initialMedicine={initialStockMed}
+        onSuccess={() => {
+          loadData();
+        }}
       />
     </div>
   );

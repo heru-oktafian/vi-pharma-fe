@@ -63,6 +63,13 @@ export async function returnToWarehouse(data, token, branchId = '') {
   }, token, branchId);
 }
 
+export async function createInitialStockBatch(data, token, branchId = '') {
+  return request('/inventory/batches/initial-stock', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }, token, branchId);
+}
+
 // -------------------------------------------------------------
 // 3. Digital Stock Card (Buku Mutasi Obat)
 // -------------------------------------------------------------

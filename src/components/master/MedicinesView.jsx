@@ -9,6 +9,7 @@ import MedicineDetailModal from './MedicineDetailModal';
 import MedicineFormModal from './MedicineFormModal';
 import EtiketPrintPreviewModal from './EtiketPrintPreviewModal';
 import ItemBarcodeLabelModal from './ItemBarcodeLabelModal';
+import InitialStockModal from '../inventory/InitialStockModal';
 import { getMedicines, getMedicineById, deleteMedicine, getUnits, getCategories, getSuppliers } from '../../services/masterDataApi';
 
 export default function MedicinesView({ token, userRole, theme = 'dark', branch }) {
@@ -33,6 +34,10 @@ export default function MedicinesView({ token, userRole, theme = 'dark', branch 
   const [selectedMedicine, setSelectedMedicine] = useState(null);
   const [formModalOpen, setFormModalOpen] = useState(false);
   const [editingMedicine, setEditingMedicine] = useState(null);
+
+  // Initial Stock Modal State
+  const [initialStockModalOpen, setInitialStockModalOpen] = useState(false);
+  const [selectedInitialStockMed, setSelectedInitialStockMed] = useState(null);
 
   // Print Etiket Simulation Modal
   const [etiketModalOpen, setEtiketModalOpen] = useState(false);
@@ -314,6 +319,25 @@ export default function MedicinesView({ token, userRole, theme = 'dark', branch 
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
           </button>
 
+          {/* Quick Input Saldo Awal Batch */}
+          {canEdit && (
+            <button
+              onClick={() => {
+                setSelectedInitialStockMed(null);
+                setInitialStockModalOpen(true);
+              }}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition ${
+                isLight
+                  ? 'bg-cyan-50 hover:bg-cyan-100 text-cyan-700 border-cyan-300'
+                  : 'bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-400 border-cyan-500/30'
+              }`}
+              title="Input Saldo Awal Fisik / Batch Baru untuk Obat Terdaftar"
+            >
+              <Layers className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="hidden sm:inline">Input Saldo Awal</span>
+            </button>
+          )}
+
           {canEdit && (
             <button
               onClick={handleOpenAdd}
@@ -510,6 +534,20 @@ export default function MedicinesView({ token, userRole, theme = 'dark', branch 
                             <Printer className="w-3.5 h-3.5" />
                           </button>
 
+                          {/* Quick Input Saldo Awal Batch for this item */}
+                          {canEdit && (
+                            <button
+                              onClick={() => {
+                                setSelectedInitialStockMed(item);
+                                setInitialStockModalOpen(true);
+                              }}
+                              className="p-1 rounded text-slate-400 hover:text-cyan-400 hover:bg-slate-500/10 transition"
+                              title="Input Saldo Awal / Batch Baru"
+                            >
+                              <Layers className="w-3.5 h-3.5 text-cyan-400" />
+                            </button>
+                          )}
+
                           <button
                             onClick={() => handleOpenDetail(item)}
                             className="p-1 rounded text-slate-400 hover:text-cyan-400 hover:bg-slate-500/10 transition"
@@ -604,6 +642,21 @@ export default function MedicinesView({ token, userRole, theme = 'dark', branch 
         medicine={barcodeTargetMedicine}
         branch={branch}
         theme={theme}
+      />
+
+      {/* Quick Initial Stock / Batch Modal */}
+      <InitialStockModal
+        isOpen={initialStockModalOpen}
+        onClose={() => setInitialStockModalOpen(false)}
+        token={token}
+        branch={branch}
+        theme={theme}
+        initialMedicine={selectedInitialStockMed}
+        onSuccess={() => {
+          setAlert({ type: 'success', text: 'Saldo awal batch berhasil dicatat ke stok fisik & kartu stok.' });
+          fetchMedicinesList();
+          setTimeout(() => setAlert(null), 4000);
+        }}
       />
     </div>
   );

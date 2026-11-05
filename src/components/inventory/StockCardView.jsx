@@ -196,6 +196,7 @@ export default function StockCardView({ token, userRole, theme = 'dark', branch,
                 </tr>
               ) : (
                 mutations.map((m) => {
+                  const isInitial = m.mutation_type === 'SALDO_AWAL' || m.reference_no?.startsWith('SALDO-AWAL');
                   const isPurch = m.mutation_type === 'PEMBELIAN';
                   const isSale = m.mutation_type === 'PENJUALAN' || m.mutation_type === 'RESEP';
                   const isRefill = m.mutation_type === 'REFILL_RAK';
@@ -222,17 +223,19 @@ export default function StockCardView({ token, userRole, theme = 'dark', branch,
                       {/* Mutation Type */}
                       <td className="py-2 px-3 text-center">
                         <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                          isPurch
-                            ? 'bg-emerald-500/15 text-token-emerald border border-token-emerald/30'
-                            : isSale
-                              ? 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
-                              : isRefill
-                                ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
-                                : isReturn
-                                  ? 'bg-blue-500/15 text-blue-400 border border-blue-500/30'
-                                  : 'bg-purple-500/15 text-purple-400 border border-purple-500/30'
+                          isInitial
+                            ? 'bg-cyan-500/15 text-cyan-400 border border-cyan-500/30'
+                            : isPurch
+                              ? 'bg-emerald-500/15 text-token-emerald border border-token-emerald/30'
+                              : isSale
+                                ? 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
+                                : isRefill
+                                  ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
+                                  : isReturn
+                                    ? 'bg-blue-500/15 text-blue-400 border border-blue-500/30'
+                                    : 'bg-purple-500/15 text-purple-400 border border-purple-500/30'
                         }`}>
-                          {m.mutation_type}
+                          {isInitial ? 'SALDO AWAL' : m.mutation_type}
                         </span>
                       </td>
 
