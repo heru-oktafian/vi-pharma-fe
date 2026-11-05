@@ -42,7 +42,6 @@ export default function MedicinesView({ token, userRole, theme = 'dark', branch 
   // Print Etiket Simulation Modal
   const [etiketModalOpen, setEtiketModalOpen] = useState(false);
   const [etiketPrintTarget, setEtiketPrintTarget] = useState(null);
-  const [etiketPrintMode, setEtiketPrintMode] = useState('single');
 
   // Barcode / QR-Code Thermal Label Modal
   const [barcodeModalOpen, setBarcodeModalOpen] = useState(false);
@@ -145,13 +144,6 @@ export default function MedicinesView({ token, userRole, theme = 'dark', branch 
   // Open Print Simulation
   const handleOpenPrintSingle = (item) => {
     setEtiketPrintTarget(item);
-    setEtiketPrintMode('single');
-    setEtiketModalOpen(true);
-  };
-
-  const handleOpenPrintGroup = () => {
-    setEtiketPrintTarget(medicines[0] || null);
-    setEtiketPrintMode('group');
     setEtiketModalOpen(true);
   };
 
@@ -275,21 +267,6 @@ export default function MedicinesView({ token, userRole, theme = 'dark', branch 
               </option>
             ))}
           </select>
-
-          {/* Print Group Simulation Button */}
-          <button
-            onClick={handleOpenPrintGroup}
-            disabled={medicines.length === 0}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition ${
-              isLight
-                ? 'bg-white hover:bg-vip-navy-light text-vip-navy border-vip-navy-border'
-                : 'bg-token-inner hover:bg-slate-700 text-slate-200 border-token-border hover:border-token-emerald'
-            }`}
-            title="Simulasi Print Etiket Group (Jadwal Terpadu)"
-          >
-            <Printer className="w-3.5 h-3.5 text-vip-orange" />
-            <span className="hidden sm:inline">Print Etiket Group</span>
-          </button>
 
           {/* Barcode / QR Label Button */}
           <button

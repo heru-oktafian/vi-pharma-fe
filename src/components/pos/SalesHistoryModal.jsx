@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import {
   X, Search, RefreshCw, Printer, Calendar, User, CheckCircle2,
-  AlertCircle, ChevronRight, Hash, DollarSign
+  AlertCircle, ChevronRight, Hash, DollarSign, Tag
 } from 'lucide-react';
 import { getSalesHistory, getSaleDetail } from '../../services/posApi';
+import SaleEtiketModal from './SaleEtiketModal';
 
 export default function SalesHistoryModal({
   isOpen,
@@ -22,6 +23,10 @@ export default function SalesHistoryModal({
   const [search, setSearch] = useState('');
   const [selectedMethod, setSelectedMethod] = useState('');
   const [totalCount, setTotalCount] = useState(0);
+
+  // Sale Etiket Modal State
+  const [etiketModalOpen, setEtiketModalOpen] = useState(false);
+  const [selectedSaleForEtiket, setSelectedSaleForEtiket] = useState(null);
 
   const formatIDR = (val) => {
     return new Intl.NumberFormat('id-ID', {
@@ -65,6 +70,18 @@ export default function SalesHistoryModal({
       onPrintReceipt(full);
     } catch (err) {
       onPrintReceipt(sale);
+    }
+  };
+
+  const handleOpenSaleEtiket = async (sale) => {
+    try {
+      const full = await getSaleDetail(sale.id, token, branchId);
+      setSelectedSaleForEtiket(full);
+      setEtiketModalOpen(true);
+    } catch (err) {
+      console.error('Failed to get sale details for etiket:', err);
+      setSelectedSaleForEtiket(sale);
+      setEtiketModalOpen(true);
     }
   };
 
@@ -208,14 +225,24 @@ export default function SalesHistoryModal({
                       {formatIDR(s.total_amount)}
                     </td>
                     <td className="py-2.5 px-4 text-center">
-                      <button
-                        onClick={() => handleSelectToPrint(s)}
-                        className="px-2.5 py-1 rounded-lg text-xs font-bold border border-slate-500/30 hover:border-token-emerald text-token-emerald transition inline-flex items-center gap-1.5"
-                        title="Cetak Ulang Struk"
-                      >
-                        <Printer className="w-3.5 h-3.5" />
-                        <span>Cetak Struk</span>
-                      </button>
+                      <div className="flex items-center justify-center gap-1.5 flex-nowrap">
+                        <button
+                          onClick={() => handleSelectToPrint(s)}
+                          className="px-2.5 py-1 rounded-lg text-xs font-bold border border-slate-500/30 hover:border-token-emerald text-token-emerald transition inline-flex items-center gap-1.5 whitespace-nowrap"
+                          title="Cetak Ulang Struk Kasir"
+                        >
+                          <Printer className="w-3.5 h-3.5" />
+                          <span>Cetak Struk</span>
+                        </button>
+                        <button
+                          onClick={() => handleOpenSaleEtiket(s)}
+                          className="px-2.5 py-1 rounded-lg text-xs font-bold border border-blue-500/30 hover:border-blue-400 text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 transition inline-flex items-center gap-1.5 whitespace-nowrap"
+                          title="Cetak Etiket Obat Transaksi Ini"
+                        >
+                          <Tag className="w-3.5 h-3.5" />
+                          <span>Etiket</span>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -241,6 +268,15 @@ export default function SalesHistoryModal({
           </button>
         </div>
       </div>
+
+      {/* Sale Etiket Modal */}
+      <SaleEtiketModal
+        isOpen={etiketModalOpen}
+        onClose={() => setEtiketModalOpen(false)}
+        sale={selectedSaleForEtiket}
+        branch={{ id: branchId }}
+        theme={theme}
+      />
     </div>
   );
 }
