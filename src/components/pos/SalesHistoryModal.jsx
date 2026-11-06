@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import {
   X, Search, RefreshCw, Printer, Calendar, User, CheckCircle2,
-  AlertCircle, ChevronRight, Hash, DollarSign, Tag
+  AlertCircle, ChevronRight, Hash, DollarSign, Tag, RotateCcw
 } from 'lucide-react';
 import { getSalesHistory, getSaleDetail } from '../../services/posApi';
 import SaleEtiketModal from './SaleEtiketModal';
+import SalesReturnModal from './SalesReturnModal';
+import SalesReturnReceiptModal from './SalesReturnReceiptModal';
 
 export default function SalesHistoryModal({
   isOpen,
@@ -27,6 +29,12 @@ export default function SalesHistoryModal({
   // Sale Etiket Modal State
   const [etiketModalOpen, setEtiketModalOpen] = useState(false);
   const [selectedSaleForEtiket, setSelectedSaleForEtiket] = useState(null);
+
+  // Sales Return Modal State
+  const [returnModalOpen, setReturnModalOpen] = useState(false);
+  const [selectedSaleForReturn, setSelectedSaleForReturn] = useState(null);
+  const [returnReceiptOpen, setReturnReceiptOpen] = useState(false);
+  const [createdReturn, setCreatedReturn] = useState(null);
 
   const formatIDR = (val) => {
     return new Intl.NumberFormat('id-ID', {
@@ -242,6 +250,17 @@ export default function SalesHistoryModal({
                           <Tag className="w-3.5 h-3.5" />
                           <span>Etiket</span>
                         </button>
+                        <button
+                          onClick={() => {
+                            setSelectedSaleForReturn(s);
+                            setReturnModalOpen(true);
+                          }}
+                          className="px-2.5 py-1 rounded-lg text-xs font-bold border border-rose-500/30 hover:border-rose-400 text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 transition inline-flex items-center gap-1.5 whitespace-nowrap"
+                          title="Proses Retur Penjualan Pasien"
+                        >
+                          <RotateCcw className="w-3.5 h-3.5" />
+                          <span>Retur</span>
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -274,6 +293,30 @@ export default function SalesHistoryModal({
         isOpen={etiketModalOpen}
         onClose={() => setEtiketModalOpen(false)}
         sale={selectedSaleForEtiket}
+        branch={{ id: branchId }}
+        theme={theme}
+      />
+
+      {/* Sales Return Modal */}
+      <SalesReturnModal
+        isOpen={returnModalOpen}
+        onClose={() => setReturnModalOpen(false)}
+        initialSale={selectedSaleForReturn}
+        branch={{ id: branchId }}
+        token={token}
+        theme={theme}
+        onSuccess={(created) => {
+          loadHistory();
+          setCreatedReturn(created);
+          setReturnReceiptOpen(true);
+        }}
+      />
+
+      {/* Return Thermal Receipt Modal */}
+      <SalesReturnReceiptModal
+        isOpen={returnReceiptOpen}
+        onClose={() => setReturnReceiptOpen(false)}
+        ret={createdReturn}
         branch={{ id: branchId }}
         theme={theme}
       />

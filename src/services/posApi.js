@@ -64,3 +64,38 @@ export async function getTodaySummary(token, branchId = '') {
   const qStr = branchId ? `?branch_id=${branchId}` : '';
   return request(`/pos/summary-today${qStr}`, { method: 'GET' }, token, branchId);
 }
+
+// -------------------------------------------------------------
+// Customer Sales Returns (Retur Penjualan Pasien)
+// -------------------------------------------------------------
+
+export async function getSaleReturnableInfo(saleId, token, branchId = '') {
+  const qStr = branchId ? `?branch_id=${branchId}` : '';
+  return request(`/pos/sales/${saleId}/returnable${qStr}`, { method: 'GET' }, token, branchId);
+}
+
+export async function createSalesReturn(data, token, branchId = '') {
+  return request('/pos/returns', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }, token, branchId);
+}
+
+export async function getSalesReturns(token, params = {}, branchId = '') {
+  const query = new URLSearchParams();
+  if (params.page) query.set('page', String(params.page));
+  if (params.limit) query.set('limit', String(params.limit));
+  if (params.search) query.set('search', params.search);
+  if (params.refund_type) query.set('refund_type', params.refund_type);
+  if (params.start_date) query.set('start_date', params.start_date);
+  if (params.end_date) query.set('end_date', params.end_date);
+  if (branchId) query.set('branch_id', branchId);
+
+  const qStr = query.toString() ? `?${query.toString()}` : '';
+  return request(`/pos/returns${qStr}`, { method: 'GET' }, token, branchId);
+}
+
+export async function getSalesReturnDetail(returnId, token, branchId = '') {
+  const qStr = branchId ? `?branch_id=${branchId}` : '';
+  return request(`/pos/returns/${returnId}${qStr}`, { method: 'GET' }, token, branchId);
+}

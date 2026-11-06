@@ -2,13 +2,16 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   ShoppingCart, Search, Barcode, Plus, Minus, Trash2, ArrowLeft,
   CreditCard, CheckCircle2, AlertCircle, RefreshCw, Layers, History,
-  User, Tag, Percent, Sparkles, Package, AlertTriangle, Zap, Store
+  User, Tag, Percent, Sparkles, Package, AlertTriangle, Zap, Store, RotateCcw
 } from 'lucide-react';
 import { getStockSummaries } from '../../services/inventoryApi';
 import { createSaleTransaction, getTodaySummary } from '../../services/posApi';
 import PaymentModal from './PaymentModal';
 import ReceiptPrintModal from './ReceiptPrintModal';
 import SalesHistoryModal from './SalesHistoryModal';
+import SalesReturnModal from './SalesReturnModal';
+import SalesReturnsHistoryModal from './SalesReturnsHistoryModal';
+import SalesReturnReceiptModal from './SalesReturnReceiptModal';
 
 export default function POSDashboard({ user, branch, token, theme = 'dark', onBack }) {
   const isLight = theme === 'light';
@@ -38,6 +41,10 @@ export default function POSDashboard({ user, branch, token, theme = 'dark', onBa
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [receiptModalOpen, setReceiptModalOpen] = useState(false);
   const [historyModalOpen, setHistoryModalOpen] = useState(false);
+  const [salesReturnModalOpen, setSalesReturnModalOpen] = useState(false);
+  const [salesReturnsHistoryModalOpen, setSalesReturnsHistoryModalOpen] = useState(false);
+  const [createdReturnForReceipt, setCreatedReturnForReceipt] = useState(null);
+  const [returnReceiptModalOpen, setReturnReceiptModalOpen] = useState(false);
   const [lastCompletedSale, setLastCompletedSale] = useState(null);
   const [submittingCheckout, setSubmittingCheckout] = useState(false);
   const [alertMsg, setAlertMsg] = useState(null);
@@ -74,10 +81,10 @@ export default function POSDashboard({ user, branch, token, theme = 'dark', onBa
 
   // Autofocus scanner input on load and after actions
   useEffect(() => {
-    if (!paymentModalOpen && !receiptModalOpen && !historyModalOpen) {
+    if (!paymentModalOpen && !receiptModalOpen && !historyModalOpen && !salesReturnModalOpen && !salesReturnsHistoryModalOpen && !returnReceiptModalOpen) {
       scannerInputRef.current?.focus();
     }
-  }, [paymentModalOpen, receiptModalOpen, historyModalOpen]);
+  }, [paymentModalOpen, receiptModalOpen, historyModalOpen, salesReturnModalOpen, salesReturnsHistoryModalOpen, returnReceiptModalOpen]);
 
   // Helper to get active price for medicine by tier
   const getMedicinePrice = (med, tier = priceTier) => {
@@ -331,6 +338,28 @@ export default function POSDashboard({ user, branch, token, theme = 'dark', onBa
           >
             <History className="w-3.5 h-3.5 text-blue-400" />
             <span>Riwayat Transaksi</span>
+          </button>
+
+          <button
+            onClick={() => setSalesReturnModalOpen(true)}
+            className={`px-3 py-1 rounded-xl border text-xs font-bold transition flex items-center gap-1.5 ${
+              isLight ? 'bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-200' : 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border-rose-500/30'
+            }`}
+            title="Formulir Retur Barang dari Pasien"
+          >
+            <RotateCcw className="w-3.5 h-3.5 text-rose-400" />
+            <span>+ Retur Penjualan</span>
+          </button>
+
+          <button
+            onClick={() => setSalesReturnsHistoryModalOpen(true)}
+            className={`px-3 py-1 rounded-xl border text-xs font-bold transition flex items-center gap-1.5 ${
+              isLight ? 'bg-white hover:bg-slate-100 text-slate-700 border-slate-300' : 'bg-token-inner hover:bg-slate-700 text-slate-200 border-token-border'
+            }`}
+            title="Daftar & Cetak Ulang Nota Retur Pasien"
+          >
+            <RotateCcw className="w-3.5 h-3.5 text-amber-400" />
+            <span>Riwayat Retur</span>
           </button>
 
           <button
@@ -724,6 +753,39 @@ export default function POSDashboard({ user, branch, token, theme = 'dark', onBa
           setLastCompletedSale(sale);
           setReceiptModalOpen(true);
         }}
+      />
+
+      {/* Sales Return Modal */}
+      <SalesReturnModal
+        isOpen={salesReturnModalOpen}
+        onClose={() => setSalesReturnModalOpen(false)}
+        branch={branch}
+        token={token}
+        theme={theme}
+        onSuccess={(created) => {
+          loadData();
+          setCreatedReturnForReceipt(created);
+          setReturnReceiptModalOpen(true);
+        }}
+      />
+
+      {/* Sales Returns History Audit Log Modal */}
+      <SalesReturnsHistoryModal
+        isOpen={salesReturnsHistoryModalOpen}
+        onClose={() => setSalesReturnsHistoryModalOpen(false)}
+        token={token}
+        branchId={branch?.id}
+        branch={branch}
+        theme={theme}
+      />
+
+      {/* Sales Return Thermal Receipt Modal */}
+      <SalesReturnReceiptModal
+        isOpen={returnReceiptModalOpen}
+        onClose={() => setReturnReceiptModalOpen(false)}
+        ret={createdReturnForReceipt}
+        branch={branch}
+        theme={theme}
       />
     </div>
   );
