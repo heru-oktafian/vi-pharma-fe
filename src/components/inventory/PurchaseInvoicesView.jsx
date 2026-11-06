@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, RefreshCw, FileText, Calendar, Building2, DollarSign, CheckCircle2, Clock, Eye, X } from 'lucide-react';
 import { getPurchaseInvoices, getPurchaseInvoiceDetail } from '../../services/inventoryApi';
 import PurchaseInvoiceModal from './PurchaseInvoiceModal';
+import InvoicePaymentModal from '../procurement/InvoicePaymentModal';
 
 export default function PurchaseInvoicesView({ token, userRole, theme = 'dark', branch }) {
   const isLight = theme === 'light';
@@ -13,6 +14,10 @@ export default function PurchaseInvoicesView({ token, userRole, theme = 'dark', 
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [loadingDetail, setLoadingDetail] = useState(false);
+
+  // Payment Modal
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [paymentInvoice, setPaymentInvoice] = useState(null);
 
   const loadInvoices = async () => {
     try {
@@ -147,13 +152,26 @@ export default function PurchaseInvoicesView({ token, userRole, theme = 'dark', 
                         Rp {(inv.total_amount || 0).toLocaleString('id-ID')}
                       </td>
                       <td className="py-2.5 px-3 text-center">
-                        <button
-                          onClick={() => handleOpenDetail(inv.id)}
-                          className="p-1.5 rounded-lg border border-purple-500/30 text-purple-400 hover:text-white hover:bg-purple-500/20 transition"
-                          title="Lihat Detail Item Faktur"
-                        >
-                          <Eye className="w-3.5 h-3.5" />
-                        </button>
+                        <div className="flex items-center justify-center gap-1.5">
+                          <button
+                            onClick={() => {
+                              setPaymentInvoice(inv);
+                              setPaymentModalOpen(true);
+                            }}
+                            className="px-2 py-1 rounded-lg bg-purple-600/20 hover:bg-purple-600 text-purple-300 hover:text-white border border-purple-500/30 text-[10px] font-bold transition flex items-center gap-1"
+                            title="Bayar / Pelunasan Hutang"
+                          >
+                            <DollarSign className="w-3 h-3" />
+                            <span>{isPaid ? 'Riwayat' : 'Bayar'}</span>
+                          </button>
+                          <button
+                            onClick={() => handleOpenDetail(inv.id)}
+                            className="p-1 rounded-lg border border-slate-700/50 hover:bg-slate-700/50 text-slate-400 hover:text-white transition"
+                            title="Lihat Detail Item Faktur"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -171,6 +189,17 @@ export default function PurchaseInvoicesView({ token, userRole, theme = 'dark', 
         theme={theme}
         branchId={branch?.id}
         token={token}
+        onSuccess={loadInvoices}
+      />
+
+      {/* Invoice Payment Modal */}
+      <InvoicePaymentModal
+        isOpen={paymentModalOpen}
+        onClose={() => setPaymentModalOpen(false)}
+        invoice={paymentInvoice}
+        branch={branch}
+        token={token}
+        theme={theme}
         onSuccess={loadInvoices}
       />
 

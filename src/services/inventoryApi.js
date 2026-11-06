@@ -136,3 +136,40 @@ export async function submitOpnameSession(opnameId, data, token, branchId = '') 
     body: JSON.stringify(data),
   }, token, branchId);
 }
+
+// -------------------------------------------------------------
+// 7. Accounts Payable & Invoice Payments (Hutang Faktur PBF)
+// -------------------------------------------------------------
+export async function getAccountsPayableSummary(token, branchId = '') {
+  const qStr = branchId ? `?branch_id=${branchId}` : '';
+  return request(`/inventory/accounts-payable/summary${qStr}`, { method: 'GET' }, token, branchId);
+}
+
+export async function getAccountsPayableInvoices(token, params = {}, branchId = '') {
+  const query = new URLSearchParams();
+  if (params.page) query.set('page', String(params.page));
+  if (params.limit) query.set('limit', String(params.limit));
+  if (params.search) query.set('search', params.search);
+  if (params.supplier_id) query.set('supplier_id', params.supplier_id);
+  if (params.status) query.set('status', params.status);
+  if (params.is_overdue) query.set('is_overdue', 'true');
+  if (params.due_soon) query.set('due_soon', 'true');
+  if (params.sort_by) query.set('sort_by', params.sort_by);
+  if (params.start_date) query.set('start_date', params.start_date);
+  if (params.end_date) query.set('end_date', params.end_date);
+  if (branchId) query.set('branch_id', branchId);
+
+  const qStr = query.toString() ? `?${query.toString()}` : '';
+  return request(`/inventory/accounts-payable/invoices${qStr}`, { method: 'GET' }, token, branchId);
+}
+
+export async function recordInvoicePayment(invoiceId, data, token, branchId = '') {
+  return request(`/inventory/invoices/${invoiceId}/payments`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }, token, branchId);
+}
+
+export async function getInvoicePayments(invoiceId, token) {
+  return request(`/inventory/invoices/${invoiceId}/payments`, { method: 'GET' }, token);
+}

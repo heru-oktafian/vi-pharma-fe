@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, FileText, ShieldAlert, AlertTriangle, Building2, Plus, Sparkles, CheckCircle2, RotateCcw } from 'lucide-react';
+import { ArrowLeft, FileText, ShieldAlert, AlertTriangle, Building2, Plus, Sparkles, CheckCircle2, RotateCcw, DollarSign } from 'lucide-react';
 import PurchaseOrdersListView from './PurchaseOrdersListView';
 import AutoReorderView from './AutoReorderView';
 import PurchaseOrderFormModal from './PurchaseOrderFormModal';
@@ -9,6 +9,7 @@ import PurchaseReturnsListView from './PurchaseReturnsListView';
 import PurchaseReturnFormModal from './PurchaseReturnFormModal';
 import PurchaseReturnDetailModal from './PurchaseReturnDetailModal';
 import PrintableReturnModal from './PrintableReturnModal';
+import AccountsPayableView from './AccountsPayableView';
 
 export default function ProcurementDashboard({ user, branch, token, theme = 'dark', onBack }) {
   const [activeTab, setActiveTab] = useState('all');
@@ -39,6 +40,7 @@ export default function ProcurementDashboard({ user, branch, token, theme = 'dar
     { id: 'special', label: 'SP Khusus (Narkotika & Prekursor)', icon: ShieldAlert, desc: 'Surat Pesanan dengan regulasi khusus BPOM & SIPA' },
     { id: 'reorder', label: 'Rekomendasi ROP (Stok Menipis)', icon: AlertTriangle, desc: 'Kalkulasi otomatis obat di bawah batas minimum' },
     { id: 'returns', label: 'Retur Pembelian (PBF)', icon: RotateCcw, desc: 'Pengembalian obat rusak/ED ke distributor & nota retur resmi' },
+    { id: 'payable', label: 'Hutang & Jatuh Tempo (AP)', icon: DollarSign, desc: 'Monitoring jatuh tempo faktur PBF, status pelunasan & kas keluar' },
   ];
 
   const handleOpenCreate = () => {
@@ -230,6 +232,16 @@ export default function ProcurementDashboard({ user, branch, token, theme = 'dar
             onOpenCreate={handleOpenCreateReturn}
             onOpenDetail={handleOpenDetailReturn}
             onOpenPrint={handleOpenPrintReturn}
+          />
+        )}
+
+        {activeTab === 'payable' && (
+          <AccountsPayableView
+            token={token}
+            userRole={user?.user_role}
+            theme={theme}
+            branch={branch}
+            refreshKey={refreshKey}
           />
         )}
       </div>
