@@ -26,7 +26,6 @@ export default function SalesHistoryModal({
   const [selectedMethod, setSelectedMethod] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
   const [totalCount, setTotalCount] = useState(0);
-  const dateInputRef = useRef(null);
 
   const getLocalDateString = (d = new Date()) => {
     const year = d.getFullYear();
@@ -183,22 +182,7 @@ export default function SalesHistoryModal({
             {/* Filter Tanggal */}
             <div className="flex items-center gap-1.5">
               <div className="relative flex items-center">
-                <button
-                  type="button"
-                  onClick={() => {
-                    try {
-                      dateInputRef.current?.showPicker?.();
-                    } catch (_) {
-                      dateInputRef.current?.focus();
-                    }
-                  }}
-                  className="absolute left-2.5 text-slate-400 hover:text-token-emerald transition z-10 p-0.5 rounded cursor-pointer"
-                  title="Klik untuk membuka kalender filter tanggal"
-                >
-                  <Calendar className="w-3.5 h-3.5" />
-                </button>
                 <input
-                  ref={dateInputRef}
                   type="date"
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
@@ -213,7 +197,7 @@ export default function SalesHistoryModal({
                     } catch (_) {}
                   }}
                   style={{ colorScheme: isLight ? 'light' : 'dark' }}
-                  className={`pl-8 pr-2 py-1.5 text-xs rounded-xl border cursor-pointer ${
+                  className={`px-3 py-1.5 text-xs rounded-xl border cursor-pointer ${
                     isLight ? 'bg-white border-slate-300 text-slate-900' : 'bg-token-card border-token-border text-white'
                   }`}
                   title="Klik untuk memilih tanggal transaksi"
