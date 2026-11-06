@@ -44,6 +44,28 @@ export default function SalesHistoryModal({
     }).format(val || 0);
   };
 
+  const formatDateTime = (dateStr) => {
+    if (!dateStr) return '-';
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return String(dateStr);
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    return `${day}-${month}-${year} ${hours}:${minutes}`;
+  };
+
+  const getItemNames = (sale) => {
+    if (!sale?.items || sale.items.length === 0) {
+      return sale?.notes || 'PENJUALAN KASIR POS';
+    }
+    const names = sale.items
+      .map((it) => it.medicine?.name || it.name || it.medicine_id)
+      .filter(Boolean);
+    return names.length > 0 ? names.join(', ') : (sale?.notes || 'PENJUALAN KASIR POS');
+  };
+
   const loadHistory = async () => {
     try {
       setLoading(true);
@@ -132,7 +154,7 @@ export default function SalesHistoryModal({
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Cari no. invoice, kasir, atau pelanggan..."
+                placeholder="Cari no. transaksi, obat, atau pelanggan..."
                 className={`w-full pl-9 pr-3 py-1.5 text-xs rounded-xl border ${
                   isLight ? 'bg-white border-slate-300 text-slate-900' : 'bg-token-card border-token-border text-white'
                 }`}
@@ -181,26 +203,22 @@ export default function SalesHistoryModal({
               isLight ? 'bg-slate-100 border-slate-200 text-slate-600' : 'bg-token-inner border-token-border text-slate-400'
             }`}>
               <tr>
-                <th className="py-2.5 px-4 text-left">No. Invoice</th>
-                <th className="py-2.5 px-4 text-left">Waktu</th>
-                <th className="py-2.5 px-4 text-left">Pelanggan</th>
-                <th className="py-2.5 px-4 text-left">Kasir</th>
-                <th className="py-2.5 px-4 text-center">Metode</th>
-                <th className="py-2.5 px-4 text-right">Total Tagihan</th>
-                <th className="py-2.5 px-4 text-center">Aksi</th>
+                <th className="py-2.5 px-4 text-left w-48 sm:w-56">No. Transaksi</th>
+                <th className="py-2.5 px-4 text-left">Detail</th>
+                <th className="py-2.5 px-4 text-center w-64">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-token-border/40">
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-slate-400">
+                  <td colSpan={3} className="py-12 text-center text-slate-400">
                     <RefreshCw className="w-5 h-5 mx-auto mb-2 animate-spin text-token-emerald" />
                     <span>Memuat riwayat transaksi kasir...</span>
                   </td>
                 </tr>
               ) : sales.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-slate-400">
+                  <td colSpan={3} className="py-12 text-center text-slate-400">
                     Belum ada transaksi penjualan yang tercatat.
                   </td>
                 </tr>
@@ -212,27 +230,22 @@ export default function SalesHistoryModal({
                       isLight ? 'hover:bg-slate-50' : 'hover:bg-token-inner/40'
                     }`}
                   >
-                    <td className="py-2.5 px-4 font-mono font-bold text-token-emerald">
+                    <td className="py-3 px-4 font-mono font-bold text-token-emerald align-top whitespace-nowrap">
                       {s.invoice_number}
                     </td>
-                    <td className="py-2.5 px-4 text-slate-400 font-mono text-[11px]">
-                      {new Date(s.created_at).toLocaleString('id-ID')}
+                    <td className="py-3 px-4 align-top">
+                      <div className={`font-bold uppercase tracking-tight text-xs leading-snug ${
+                        isLight ? 'text-slate-900' : 'text-white'
+                      }`}>
+                        {getItemNames(s)}
+                      </div>
+                      <div className={`text-[11px] font-mono mt-1 ${
+                        isLight ? 'text-slate-500' : 'text-slate-400'
+                      }`}>
+                        {formatDateTime(s.created_at)}
+                      </div>
                     </td>
-                    <td className="py-2.5 px-4 font-bold text-slate-200">
-                      {s.customer_name}
-                    </td>
-                    <td className="py-2.5 px-4 text-slate-400 capitalize">
-                      {s.cashier?.name || 'Kasir'}
-                    </td>
-                    <td className="py-2.5 px-4 text-center">
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/15 text-blue-400 border border-blue-500/30">
-                        {s.payment_method}
-                      </span>
-                    </td>
-                    <td className="py-2.5 px-4 text-right font-mono font-extrabold text-white">
-                      {formatIDR(s.total_amount)}
-                    </td>
-                    <td className="py-2.5 px-4 text-center">
+                    <td className="py-3 px-4 text-center align-middle whitespace-nowrap">
                       <div className="flex items-center justify-center gap-1.5 flex-nowrap">
                         <button
                           onClick={() => handleSelectToPrint(s)}
