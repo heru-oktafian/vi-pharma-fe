@@ -24,6 +24,7 @@ export default function SalesHistoryModal({
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedMethod, setSelectedMethod] = useState('');
+  const [selectedDate, setSelectedDate] = useState('');
   const [totalCount, setTotalCount] = useState(0);
 
   // Sale Etiket Modal State
@@ -72,6 +73,8 @@ export default function SalesHistoryModal({
       const res = await getSalesHistory(token, {
         search: search.trim() || undefined,
         payment_method: selectedMethod || undefined,
+        start_date: selectedDate || undefined,
+        end_date: selectedDate || undefined,
         limit: 50,
       }, branchId);
 
@@ -87,7 +90,7 @@ export default function SalesHistoryModal({
 
   useEffect(() => {
     loadHistory();
-  }, [token, branchId, selectedMethod]);
+  }, [token, branchId, selectedMethod, selectedDate]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -168,7 +171,50 @@ export default function SalesHistoryModal({
             </button>
           </form>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center flex-wrap gap-2">
+            {/* Filter Tanggal */}
+            <div className="flex items-center gap-1.5">
+              <div className="relative flex items-center">
+                <Calendar className="w-3.5 h-3.5 absolute left-2.5 text-slate-400 pointer-events-none" />
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className={`pl-8 pr-2 py-1.5 text-xs rounded-xl border ${
+                    isLight ? 'bg-white border-slate-300 text-slate-900' : 'bg-token-card border-token-border text-white'
+                  }`}
+                  title="Filter Berdasarkan Tanggal Transaksi"
+                />
+                {selectedDate && (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedDate('')}
+                    className="ml-1 p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700/50 transition text-xs"
+                    title="Hapus Filter Tanggal (Tampilkan Semua)"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  const todayStr = new Date().toISOString().split('T')[0];
+                  setSelectedDate(selectedDate === todayStr ? '' : todayStr);
+                }}
+                className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition ${
+                  selectedDate === new Date().toISOString().split('T')[0]
+                    ? 'bg-token-emerald text-slate-950 border-token-emerald font-bold'
+                    : isLight
+                    ? 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100'
+                    : 'bg-token-card border-token-border text-slate-300 hover:bg-slate-700'
+                }`}
+                title="Filter Transaksi Hari Ini"
+              >
+                Hari Ini
+              </button>
+            </div>
+
             <select
               value={selectedMethod}
               onChange={(e) => setSelectedMethod(e.target.value)}
@@ -289,6 +335,11 @@ export default function SalesHistoryModal({
         }`}>
           <div>
             Total tercatat: <strong className="text-white font-mono">{totalCount}</strong> transaksi
+            {selectedDate && (
+              <span className="ml-1 text-token-emerald font-semibold">
+                (Filter Tanggal: {selectedDate})
+              </span>
+            )}
           </div>
           <button
             onClick={onClose}
