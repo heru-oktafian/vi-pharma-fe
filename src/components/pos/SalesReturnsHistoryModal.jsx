@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   X, RotateCcw, Search, RefreshCw, Printer, Calendar, User, CheckCircle2,
   AlertCircle, ChevronRight, Hash, DollarSign
@@ -23,6 +23,14 @@ export default function SalesReturnsHistoryModal({
   const [selectedRefundType, setSelectedRefundType] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
   const [totalCount, setTotalCount] = useState(0);
+  const dateInputRef = useRef(null);
+
+  const getLocalDateString = (d = new Date()) => {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
 
   // Receipt Modal State
   const [receiptModalOpen, setReceiptModalOpen] = useState(false);
@@ -169,15 +177,40 @@ export default function SalesReturnsHistoryModal({
             {/* Filter Tanggal */}
             <div className="flex items-center gap-1.5">
               <div className="relative flex items-center">
-                <Calendar className="w-3.5 h-3.5 absolute left-2.5 text-slate-400 pointer-events-none" />
+                <button
+                  type="button"
+                  onClick={() => {
+                    try {
+                      dateInputRef.current?.showPicker?.();
+                    } catch (_) {
+                      dateInputRef.current?.focus();
+                    }
+                  }}
+                  className="absolute left-2.5 text-slate-400 hover:text-rose-400 transition z-10 p-0.5 rounded cursor-pointer"
+                  title="Klik untuk membuka kalender filter tanggal"
+                >
+                  <Calendar className="w-3.5 h-3.5" />
+                </button>
                 <input
+                  ref={dateInputRef}
                   type="date"
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
-                  className={`pl-8 pr-2 py-1.5 text-xs rounded-xl border ${
+                  onClick={(e) => {
+                    try {
+                      e.target.showPicker?.();
+                    } catch (_) {}
+                  }}
+                  onFocus={(e) => {
+                    try {
+                      e.target.showPicker?.();
+                    } catch (_) {}
+                  }}
+                  style={{ colorScheme: isLight ? 'light' : 'dark' }}
+                  className={`pl-8 pr-2 py-1.5 text-xs rounded-xl border cursor-pointer ${
                     isLight ? 'bg-white border-slate-300 text-slate-900' : 'bg-token-card border-token-border text-white'
                   }`}
-                  title="Filter Berdasarkan Tanggal Retur"
+                  title="Klik untuk memilih tanggal retur"
                 />
                 {selectedDate && (
                   <button
@@ -193,11 +226,11 @@ export default function SalesReturnsHistoryModal({
               <button
                 type="button"
                 onClick={() => {
-                  const todayStr = new Date().toISOString().split('T')[0];
+                  const todayStr = getLocalDateString();
                   setSelectedDate(selectedDate === todayStr ? '' : todayStr);
                 }}
                 className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition ${
-                  selectedDate === new Date().toISOString().split('T')[0]
+                  selectedDate === getLocalDateString()
                     ? 'bg-rose-600 text-white border-rose-600 font-bold'
                     : isLight
                     ? 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100'
