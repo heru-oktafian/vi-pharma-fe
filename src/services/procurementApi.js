@@ -81,3 +81,55 @@ export async function deletePurchaseOrder(id, token, branchId = '') {
     method: 'DELETE',
   }, token, branchId);
 }
+
+// -------------------------------------------------------------
+// Purchase Returns / Retur Pembelian ke PBF
+// -------------------------------------------------------------
+
+export async function getPurchaseReturns(token, params = {}, branchId = '') {
+  const query = new URLSearchParams();
+  if (params.page) query.set('page', String(params.page));
+  if (params.limit) query.set('limit', String(params.limit));
+  if (params.search) query.set('search', params.search);
+  if (params.supplier_id) query.set('supplier_id', params.supplier_id);
+  if (params.status) query.set('status', params.status);
+  if (params.reason) query.set('reason', params.reason);
+  if (params.compensation_type) query.set('compensation_type', params.compensation_type);
+  if (params.start_date) query.set('start_date', params.start_date);
+  if (params.end_date) query.set('end_date', params.end_date);
+  if (branchId) query.set('branch_id', branchId);
+
+  const qStr = query.toString() ? `?${query.toString()}` : '';
+  return request(`/procurement/returns${qStr}`, { method: 'GET' }, token, branchId);
+}
+
+export async function getPurchaseReturnDetail(id, token) {
+  return request(`/procurement/returns/${id}`, { method: 'GET' }, token);
+}
+
+export async function createPurchaseReturn(data, token, branchId = '') {
+  return request('/procurement/returns', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }, token, branchId);
+}
+
+export async function updatePurchaseReturn(id, data, token, branchId = '') {
+  return request(`/procurement/returns/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  }, token, branchId);
+}
+
+export async function updateReturnStatus(id, status, notes = '', token, branchId = '') {
+  return request(`/procurement/returns/${id}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status, notes }),
+  }, token, branchId);
+}
+
+export async function deletePurchaseReturn(id, token, branchId = '') {
+  return request(`/procurement/returns/${id}`, {
+    method: 'DELETE',
+  }, token, branchId);
+}

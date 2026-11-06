@@ -1,23 +1,35 @@
 import React, { useState } from 'react';
-import { ArrowLeft, FileText, ShieldAlert, AlertTriangle, Building2, Plus, Sparkles, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, FileText, ShieldAlert, AlertTriangle, Building2, Plus, Sparkles, CheckCircle2, RotateCcw } from 'lucide-react';
 import PurchaseOrdersListView from './PurchaseOrdersListView';
 import AutoReorderView from './AutoReorderView';
 import PurchaseOrderFormModal from './PurchaseOrderFormModal';
 import PurchaseOrderDetailModal from './PurchaseOrderDetailModal';
 import PrintableSPModal from './PrintableSPModal';
+import PurchaseReturnsListView from './PurchaseReturnsListView';
+import PurchaseReturnFormModal from './PurchaseReturnFormModal';
+import PurchaseReturnDetailModal from './PurchaseReturnDetailModal';
+import PrintableReturnModal from './PrintableReturnModal';
 
 export default function ProcurementDashboard({ user, branch, token, theme = 'dark', onBack }) {
   const [activeTab, setActiveTab] = useState('all');
   const [refreshKey, setRefreshKey] = useState(0);
   const isLight = theme === 'light';
 
-  // Modals
+  // Modals for Purchase Orders
   const [formModalOpen, setFormModalOpen] = useState(false);
   const [editPO, setEditPO] = useState(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [selectedPO, setSelectedPO] = useState(null);
   const [printModalOpen, setPrintModalOpen] = useState(false);
   const [printPO, setPrintPO] = useState(null);
+
+  // Modals for Purchase Returns
+  const [returnFormModalOpen, setReturnFormModalOpen] = useState(false);
+  const [editReturn, setEditReturn] = useState(null);
+  const [returnDetailModalOpen, setReturnDetailModalOpen] = useState(false);
+  const [selectedReturn, setSelectedReturn] = useState(null);
+  const [printReturnModalOpen, setPrintReturnModalOpen] = useState(false);
+  const [printReturn, setPrintReturn] = useState(null);
 
   // Fast SP creation from ROP recommendations
   const [fastItems, setFastItems] = useState(null);
@@ -26,6 +38,7 @@ export default function ProcurementDashboard({ user, branch, token, theme = 'dar
     { id: 'all', label: 'Semua Surat Pesanan (SP)', icon: FileText, desc: 'Daftar PO reguler & seluruh distributor PBF' },
     { id: 'special', label: 'SP Khusus (Narkotika & Prekursor)', icon: ShieldAlert, desc: 'Surat Pesanan dengan regulasi khusus BPOM & SIPA' },
     { id: 'reorder', label: 'Rekomendasi ROP (Stok Menipis)', icon: AlertTriangle, desc: 'Kalkulasi otomatis obat di bawah batas minimum' },
+    { id: 'returns', label: 'Retur Pembelian (PBF)', icon: RotateCcw, desc: 'Pengembalian obat rusak/ED ke distributor & nota retur resmi' },
   ];
 
   const handleOpenCreate = () => {
@@ -68,6 +81,31 @@ export default function ProcurementDashboard({ user, branch, token, theme = 'dar
 
   const handleRefreshList = () => {
     setActiveTab('all');
+    setRefreshKey((k) => k + 1);
+  };
+
+  // Return Handlers
+  const handleOpenCreateReturn = () => {
+    setEditReturn(null);
+    setReturnFormModalOpen(true);
+  };
+
+  const handleOpenDetailReturn = (ret) => {
+    setSelectedReturn(ret);
+    setReturnDetailModalOpen(true);
+  };
+
+  const handleOpenPrintReturn = (ret) => {
+    setPrintReturn(ret);
+    setPrintReturnModalOpen(true);
+  };
+
+  const handleOpenEditReturn = (ret) => {
+    setEditReturn(ret);
+    setReturnFormModalOpen(true);
+  };
+
+  const handleRefreshReturns = () => {
     setRefreshKey((k) => k + 1);
   };
 
@@ -181,6 +219,19 @@ export default function ProcurementDashboard({ user, branch, token, theme = 'dar
             onFastCreateSP={handleFastCreateSP}
           />
         )}
+
+        {activeTab === 'returns' && (
+          <PurchaseReturnsListView
+            token={token}
+            userRole={user?.user_role}
+            theme={theme}
+            branch={branch}
+            refreshKey={refreshKey}
+            onOpenCreate={handleOpenCreateReturn}
+            onOpenDetail={handleOpenDetailReturn}
+            onOpenPrint={handleOpenPrintReturn}
+          />
+        )}
       </div>
 
       {/* Create / Edit Form Modal */}
@@ -212,6 +263,39 @@ export default function ProcurementDashboard({ user, branch, token, theme = 'dar
         isOpen={printModalOpen}
         onClose={() => setPrintModalOpen(false)}
         po={printPO}
+        branch={branch}
+        theme={theme}
+      />
+
+      {/* Purchase Return Form Modal */}
+      <PurchaseReturnFormModal
+        isOpen={returnFormModalOpen}
+        onClose={() => setReturnFormModalOpen(false)}
+        theme={theme}
+        branch={branch}
+        token={token}
+        editReturn={editReturn}
+        onSuccess={handleRefreshReturns}
+      />
+
+      {/* Purchase Return Detail Modal */}
+      <PurchaseReturnDetailModal
+        isOpen={returnDetailModalOpen}
+        onClose={() => setReturnDetailModalOpen(false)}
+        ret={selectedReturn}
+        branch={branch}
+        token={token}
+        theme={theme}
+        onPrint={handleOpenPrintReturn}
+        onEdit={handleOpenEditReturn}
+        onRefresh={handleRefreshReturns}
+      />
+
+      {/* Printable Return Slip Modal */}
+      <PrintableReturnModal
+        isOpen={printReturnModalOpen}
+        onClose={() => setPrintReturnModalOpen(false)}
+        ret={printReturn}
         branch={branch}
         theme={theme}
       />
