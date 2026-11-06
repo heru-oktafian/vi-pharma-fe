@@ -3,7 +3,7 @@ import {
   BarChart3, Users, DollarSign, TrendingUp, Award, Calendar, RefreshCw,
   ArrowLeft, Building2, HelpCircle, ArrowUpRight, Percent, Sparkles,
   PieChart, CreditCard, Layers, Tag, ShieldCheck, AlertCircle, Save, CheckCircle2,
-  Eye, X, Lock
+  Eye, X, Lock, Download, Printer
 } from 'lucide-react';
 import {
   getStaffPerformanceReport,
@@ -40,12 +40,141 @@ export default function ReportsDashboard({ user, branch, token, theme, onBack })
   const [isSavingConfig, setIsSavingConfig] = useState(false);
   const [saveSuccessMsg, setSaveSuccessMsg] = useState('');
   const [selectedStaffDaily, setSelectedStaffDaily] = useState(null);
+  const [isPrintSalesModalOpen, setIsPrintSalesModalOpen] = useState(false);
 
   const [staffData, setStaffData] = useState(null);
   const [salesData, setSalesData] = useState(null);
   const [categoryData, setCategoryData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState('');
+
+  // CSV Helpers
+  const downloadCSV = (content, filename) => {
+    const blob = new Blob(['\uFEFF' + content], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleExportStaffCSV = () => {
+    if (!staffData || !staffData.staff_contributions?.length) {
+      alert('Tidak ada data kinerja petugas untuk diekspor pada periode ini.');
+      return;
+    }
+    const headers = [
+      'No',
+      'Nama Petugas',
+      'Role',
+      'Jumlah Transaksi',
+      'Total Omzet (Rp)',
+      'Total Modal HPP (Rp)',
+      'Margin Laba Kotor (Rp)',
+      'Markup (%)',
+      'Kontribusi Margin (%)',
+      'Hari Masuk',
+      'Hari Capai Target',
+      'Bonus Harian Tercapai (Rp)'
+    ];
+    const rows = staffData.staff_contributions.map((st, idx) => [
+      idx + 1,
+      `"${st.user_name.replace(/"/g, '""')}"`,
+      `"${st.user_role}"`,
+      st.transactions_handled,
+      st.total_revenue,
+      st.total_cogs,
+      st.gross_margin,
+      st.markup_percentage,
+      st.contribution_margin_pct,
+      st.active_days_count,
+      st.days_achieved,
+      st.total_bonus
+    ]);
+    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    downloadCSV(csvContent, `Laporan_Kinerja_Bonus_Petugas_${startDate}_sd_${endDate}.csv`);
+  };
+
+  const handleExportSalesCSV = () => {
+    if (!salesData) {
+      alert('Tidak ada data penjualan untuk diekspor pada periode ini.');
+      return;
+    }
+    const summaryRows = [
+      ['LAPORAN LABA RUGI & RINGKASAN PENJUALAN APOTEK'],
+      [`Cabang: ${branch?.branch_name || 'Apotek Vi-Pharma'}`],
+      [`Periode: ${startDate} s/d ${endDate}`],
+      [''],
+      ['Indikator Laba Rugi', 'Nominal / Nilai (Rp)'],
+      ['Total Transaksi Kasir', salesData.total_transactions || 0],
+      ['Omzet Penjualan Kotor (Gross)', salesData.total_revenue || 0],
+      ['Retur Penjualan Pasien', salesData.total_returns || 0],
+      ['Omzet Penjualan Bersih (Net Sales)', salesData.net_revenue !== undefined ? salesData.net_revenue : ((salesData.total_revenue || 0) - (salesData.total_returns || 0))],
+      ['Total Modal Pokok (HPP)', salesData.total_cogs || 0],
+      ['Laba Kotor Apotek (Gross Profit)', salesData.total_margin || 0],
+      ['Margin terhadap Omzet Bersih (%)', `${salesData.margin_percent || 0}%`],
+      [''],
+      ['TREN PENJUALAN HARIAN'],
+      ['Tanggal', 'Jumlah Transaksi', 'Omzet (Rp)', 'Modal HPP (Rp)', 'Laba Kotor (Rp)']
+    ];
+    (salesData.daily_trends || []).forEach((tr) => {
+      summaryRows.push([
+        tr.date,
+        tr.transactions,
+        tr.revenue,
+        tr.cogs,
+        tr.margin
+      ]);
+    });
+    summaryRows.push(['']);
+    summaryRows.push(['KOMPOSISI METODE PEMBAYARAN']);
+    summaryRows.push(['Metode Pembayaran', 'Jumlah Transaksi', 'Total Nominal (Rp)', 'Persentase (%)']);
+    (salesData.payment_methods || []).forEach((pm) => {
+      summaryRows.push([
+        pm.payment_method,
+        pm.count,
+        pm.total_amount,
+        `${pm.percentage}%`
+      ]);
+    });
+
+    const csvContent = summaryRows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+    downloadCSV(csvContent, `Laporan_Laba_Rugi_Penjualan_${startDate}_sd_${endDate}.csv`);
+  };
+
+  const handleExportCategoriesCSV = () => {
+    if (!categoryData || !categoryData.length) {
+      alert('Tidak ada data kategori untuk diekspor pada periode ini.');
+      return;
+    }
+    const headers = [
+      'No',
+      'ID Kategori',
+      'Nama Kategori',
+      'Total Qty Terjual',
+      'Omzet (Rp)',
+      'Modal HPP (Rp)',
+      'Laba Kotor (Rp)',
+      'Margin (%)',
+      'Markup (%)'
+    ];
+    const rows = categoryData.map((cat, idx) => [
+      idx + 1,
+      `"${cat.category_id}"`,
+      `"${cat.category_name.replace(/"/g, '""')}"`,
+      cat.total_qty_sold,
+      cat.total_revenue,
+      cat.total_cogs,
+      cat.gross_margin,
+      cat.margin_percent,
+      cat.markup_percent
+    ]);
+    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    downloadCSV(csvContent, `Laporan_Profitabilitas_Kategori_${startDate}_sd_${endDate}.csv`);
+  };
 
   // Fetch Reports
   const loadReports = useCallback(async () => {
@@ -502,9 +631,20 @@ export default function ReportsDashboard({ user, branch, token, theme, onBack })
                     Data diurutkan berdasarkan kontribusi margin keuntungan terbesar ke apotek
                   </p>
                 </div>
-                <span className="text-[11px] text-slate-400">
-                  Total Petugas Aktif: <strong>{staffData?.staff_contributions?.length || 0}</strong>
-                </span>
+                <div className="flex items-center gap-3">
+                  <span className="text-[11px] text-slate-400">
+                    Total Petugas Aktif: <strong>{staffData?.staff_contributions?.length || 0}</strong>
+                  </span>
+                  <button
+                    onClick={handleExportStaffCSV}
+                    disabled={!staffData?.staff_contributions?.length}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition border bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-500 shadow-sm disabled:opacity-50 disabled:pointer-events-none"
+                    title="Ekspor CSV Kinerja & Bonus Petugas"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Ekspor CSV</span>
+                  </button>
+                </div>
               </div>
 
               <div className="overflow-x-auto">
@@ -670,10 +810,99 @@ export default function ReportsDashboard({ user, branch, token, theme, onBack })
         )}
 
         {/* ============================================================== */}
-        {/* TAB 2: RINGKASAN PENJUALAN & ARUS KAS KASIR                    */}
+        {/* TAB 2: RINGKASAN PENJUALAN & LAPORAN LABA / RUGI (P&L)        */}
         {/* ============================================================== */}
         {activeTab === 'sales' && (
           <div className="space-y-4">
+            {/* Header Toolbar */}
+            <div
+              className={`p-4 rounded-2xl border flex flex-wrap items-center justify-between gap-3 ${
+                isLight ? 'bg-white border-slate-200' : 'bg-slate-900 border-slate-800'
+              }`}
+            >
+              <div>
+                <h3 className="text-sm sm:text-base font-bold flex items-center gap-2">
+                  <CreditCard className="w-4 h-4 text-emerald-400" />
+                  <span>Laporan Laba / Rugi & Rekapitulasi Arus Kas Penjualan</span>
+                </h3>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Ikhtisar kinerja penjualan bersih, potongan retur, beban modal HPP barang, serta margin kotor apotek
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleExportSalesCSV}
+                  disabled={!salesData}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition border bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-500 shadow-sm disabled:opacity-50 disabled:pointer-events-none"
+                  title="Ekspor CSV Laporan Laba/Rugi"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Ekspor CSV Laba/Rugi</span>
+                </button>
+
+                <button
+                  onClick={() => setIsPrintSalesModalOpen(true)}
+                  disabled={!salesData}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition border ${
+                    isLight
+                      ? 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-300'
+                      : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+                  } disabled:opacity-50 disabled:pointer-events-none`}
+                  title="Cetak Laporan Laba/Rugi Resmi (A4)"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>Cetak Laporan (A4)</span>
+                </button>
+              </div>
+            </div>
+
+            {/* KPI Cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+              <div className={`p-3.5 rounded-xl border ${isLight ? 'bg-white border-slate-200' : 'bg-slate-900 border-slate-800'}`}>
+                <div className="text-[11px] text-slate-400">Omzet Kotor (Gross)</div>
+                <div className="text-lg font-black text-blue-400 mt-1">
+                  Rp {(salesData?.total_revenue || 0).toLocaleString('id-ID')}
+                </div>
+                <div className="text-[10px] text-slate-400 mt-0.5">{salesData?.total_transactions || 0} struk kasir</div>
+              </div>
+
+              <div className={`p-3.5 rounded-xl border ${isLight ? 'bg-white border-slate-200' : 'bg-slate-900 border-slate-800'}`}>
+                <div className="text-[11px] text-slate-400">Retur Penjualan Pasien</div>
+                <div className="text-lg font-black text-rose-400 mt-1">
+                  -Rp {(salesData?.total_returns || 0).toLocaleString('id-ID')}
+                </div>
+                <div className="text-[10px] text-slate-400 mt-0.5">Pengembalian dana / refund</div>
+              </div>
+
+              <div className={`p-3.5 rounded-xl border ${isLight ? 'bg-white border-slate-200' : 'bg-slate-900 border-slate-800'}`}>
+                <div className="text-[11px] text-slate-400">Omzet Bersih (Net Sales)</div>
+                <div className="text-lg font-black text-cyan-400 mt-1">
+                  Rp {(salesData?.net_revenue !== undefined ? salesData.net_revenue : ((salesData?.total_revenue || 0) - (salesData?.total_returns || 0))).toLocaleString('id-ID')}
+                </div>
+                <div className="text-[10px] text-slate-400 mt-0.5">Penjualan kotor - retur</div>
+              </div>
+
+              <div className={`p-3.5 rounded-xl border ${isLight ? 'bg-white border-slate-200' : 'bg-slate-900 border-slate-800'}`}>
+                <div className="text-[11px] text-slate-400">Beban Pokok Modal (HPP)</div>
+                <div className="text-lg font-black text-amber-400 mt-1">
+                  Rp {(salesData?.total_cogs || 0).toLocaleString('id-ID')}
+                </div>
+                <div className="text-[10px] text-slate-400 mt-0.5">Harga beli distributor</div>
+              </div>
+
+              <div className={`p-3.5 rounded-xl border ${isLight ? 'bg-white border-slate-200' : 'bg-slate-900 border-slate-800'}`}>
+                <div className="text-[11px] text-slate-400">Laba Kotor Riil (Gross Profit)</div>
+                <div className="text-lg font-black text-emerald-400 mt-1">
+                  Rp {(salesData?.total_margin || 0).toLocaleString('id-ID')}
+                </div>
+                <div className="text-[10px] text-emerald-400 font-bold mt-0.5">
+                  Margin: {salesData?.margin_percent || 0}%
+                </div>
+              </div>
+            </div>
+
+            {/* P&L Statement & Payment Methods Breakdown */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Payment Methods Breakdown */}
               <div className={`p-4 rounded-xl border ${isLight ? 'bg-white border-slate-200' : 'bg-slate-900 border-slate-800'}`}>
@@ -700,11 +929,11 @@ export default function ReportsDashboard({ user, branch, token, theme, onBack })
                 </div>
               </div>
 
-              {/* Overall Summary Card */}
+              {/* Comprehensive P&L Statement Card */}
               <div className={`p-4 rounded-xl border space-y-3 ${isLight ? 'bg-white border-slate-200' : 'bg-slate-900 border-slate-800'}`}>
                 <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
                   <TrendingUp className="w-4 h-4 text-emerald-400" />
-                  <span>Ringkasan Keuangan Periode</span>
+                  <span>Laporan Laba / Rugi Komprehensif</span>
                 </h3>
 
                 <div className="space-y-2 text-xs">
@@ -713,22 +942,100 @@ export default function ReportsDashboard({ user, branch, token, theme, onBack })
                     <strong className="text-slate-200">{salesData?.total_transactions || 0} struk</strong>
                   </div>
                   <div className="flex justify-between py-1.5 border-b border-slate-800">
-                    <span className="text-slate-400">Total Omzet Penjualan:</span>
+                    <span className="text-slate-400">Omzet Penjualan Kotor (Gross):</span>
                     <strong className="text-blue-400">Rp {(salesData?.total_revenue || 0).toLocaleString('id-ID')}</strong>
                   </div>
                   <div className="flex justify-between py-1.5 border-b border-slate-800">
-                    <span className="text-slate-400">Total Modal HPP Barang:</span>
-                    <strong className="text-slate-300">Rp {(salesData?.total_cogs || 0).toLocaleString('id-ID')}</strong>
+                    <span className="text-slate-400">(-) Retur Penjualan Pasien:</span>
+                    <strong className="text-rose-400">-Rp {(salesData?.total_returns || 0).toLocaleString('id-ID')}</strong>
+                  </div>
+                  <div className="flex justify-between py-1.5 border-b border-slate-800 bg-emerald-500/5 px-2 rounded">
+                    <span className="font-semibold text-slate-300">Omzet Penjualan Bersih (Net Sales):</span>
+                    <strong className="text-cyan-400">
+                      Rp {(salesData?.net_revenue !== undefined ? salesData.net_revenue : ((salesData?.total_revenue || 0) - (salesData?.total_returns || 0))).toLocaleString('id-ID')}
+                    </strong>
                   </div>
                   <div className="flex justify-between py-1.5 border-b border-slate-800">
-                    <span className="text-slate-400">Laba Kotor Apotek:</span>
-                    <strong className="text-emerald-400">Rp {(salesData?.total_margin || 0).toLocaleString('id-ID')}</strong>
+                    <span className="text-slate-400">(-) Beban Pokok Penjualan (HPP):</span>
+                    <strong className="text-amber-400">-Rp {(salesData?.total_cogs || 0).toLocaleString('id-ID')}</strong>
                   </div>
-                  <div className="flex justify-between py-1.5">
-                    <span className="text-slate-400">Margin terhadap Omzet:</span>
-                    <strong className="text-purple-400">{salesData?.margin_percent || 0}%</strong>
+                  <div className="flex justify-between py-2 border-t-2 border-emerald-500/40 bg-emerald-500/10 px-2 rounded">
+                    <span className="font-bold text-emerald-400">Laba Kotor Apotek (Gross Profit):</span>
+                    <strong className="text-base text-emerald-400 font-black">
+                      Rp {(salesData?.total_margin || 0).toLocaleString('id-ID')}
+                    </strong>
+                  </div>
+                  <div className="flex justify-between py-1 text-[11px] text-slate-400">
+                    <span>Margin terhadap Omzet Bersih:</span>
+                    <span className="font-bold text-purple-400">{salesData?.margin_percent || 0}%</span>
                   </div>
                 </div>
+              </div>
+            </div>
+
+            {/* Daily Sales Trend Table */}
+            <div
+              className={`rounded-2xl border overflow-hidden ${
+                isLight ? 'bg-white border-slate-200' : 'bg-slate-900 border-slate-800'
+              }`}
+            >
+              <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-bold flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-cyan-400" />
+                    <span>Rekapitulasi Tren Penjualan Harian</span>
+                  </h3>
+                  <p className="text-[11px] text-slate-400 mt-0.5">
+                    Histori pergerakan omzet, beban modal HPP, dan margin laba harian apotek
+                  </p>
+                </div>
+                <span className="text-[11px] text-slate-400">
+                  Total Hari Aktif: <strong>{(salesData?.daily_trends || []).length} Hari</strong>
+                </span>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className={`border-b text-[11px] font-bold uppercase tracking-wider ${
+                      isLight ? 'bg-slate-50 text-slate-600 border-slate-200' : 'bg-slate-800/60 text-slate-400 border-slate-800'
+                    }`}>
+                      <th className="py-3 px-4">Tanggal</th>
+                      <th className="py-3 px-4 text-center">Jumlah Transaksi</th>
+                      <th className="py-3 px-4 text-right">Omzet Harian</th>
+                      <th className="py-3 px-4 text-right">Modal HPP</th>
+                      <th className="py-3 px-4 text-right text-emerald-400 font-bold">Laba Kotor</th>
+                      <th className="py-3 px-4 text-center text-purple-400 font-bold">Margin %</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 dark:divide-slate-800/60">
+                    {(!salesData?.daily_trends || salesData.daily_trends.length === 0) ? (
+                      <tr>
+                        <td colSpan={6} className="p-8 text-center text-slate-400">
+                          Tidak ada histori transaksi penjualan harian pada rentang tanggal ini.
+                        </td>
+                      </tr>
+                    ) : (
+                      salesData.daily_trends.map((tr, idx) => {
+                        const dayMarginPct = tr.revenue > 0 ? ((tr.margin / tr.revenue) * 100).toFixed(1) : 0;
+                        return (
+                          <tr key={idx} className={isLight ? 'hover:bg-slate-50' : 'hover:bg-slate-800/40'}>
+                            <td className="py-2.5 px-4 font-mono font-medium">{tr.date}</td>
+                            <td className="py-2.5 px-4 text-center font-mono">{tr.transactions} struk</td>
+                            <td className="py-2.5 px-4 text-right font-mono">Rp {tr.revenue.toLocaleString('id-ID')}</td>
+                            <td className="py-2.5 px-4 text-right font-mono text-slate-400">Rp {tr.cogs.toLocaleString('id-ID')}</td>
+                            <td className="py-2.5 px-4 text-right font-mono font-black text-emerald-400">
+                              Rp {tr.margin.toLocaleString('id-ID')}
+                            </td>
+                            <td className="py-2.5 px-4 text-center font-mono font-bold text-purple-400">
+                              {dayMarginPct}%
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
@@ -744,14 +1051,26 @@ export default function ReportsDashboard({ user, branch, token, theme, onBack })
                 isLight ? 'bg-white border-slate-200' : 'bg-slate-900 border-slate-800'
               }`}
             >
-              <div className="p-4 border-b border-slate-800">
-                <h3 className="text-sm font-bold flex items-center gap-2">
-                  <Layers className="w-4 h-4 text-emerald-400" />
-                  <span>Laporan Profitabilitas per Kategori Terapi Farmakologi</span>
-                </h3>
-                <p className="text-[11px] text-slate-400 mt-0.5">
-                  Mengetahui kategori obat yang menghasilkan persentase margin keuntungan tertinggi
-                </p>
+              <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-bold flex items-center gap-2">
+                    <Layers className="w-4 h-4 text-emerald-400" />
+                    <span>Laporan Profitabilitas per Kategori Terapi Farmakologi</span>
+                  </h3>
+                  <p className="text-[11px] text-slate-400 mt-0.5">
+                    Mengetahui kategori obat yang menghasilkan persentase margin keuntungan tertinggi
+                  </p>
+                </div>
+
+                <button
+                  onClick={handleExportCategoriesCSV}
+                  disabled={!categoryData?.length}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition border bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-500 shadow-sm disabled:opacity-50 disabled:pointer-events-none"
+                  title="Ekspor CSV Margin Kategori"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Ekspor CSV</span>
+                </button>
               </div>
 
               <div className="overflow-x-auto">
@@ -957,6 +1276,215 @@ export default function ReportsDashboard({ user, branch, token, theme, onBack })
               >
                 Tutup
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* MODAL PRINT RESMI A4: LAPORAN LABA / RUGI & RINGKASAN KEUANGAN */}
+      {/* ============================================================== */}
+      {isPrintSalesModalOpen && salesData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-xs animate-fadeIn">
+          {/* Print CSS for Formal P&L Statement */}
+          <style>{`
+            @media print {
+              @page {
+                size: A4 portrait;
+                margin: 12mm 15mm;
+              }
+              html, body {
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #ffffff !important;
+                color: #000000 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+              }
+              body * {
+                visibility: hidden !important;
+              }
+              #printable-sales-pnl-doc,
+              #printable-sales-pnl-doc * {
+                visibility: visible !important;
+              }
+              #printable-sales-pnl-doc {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #ffffff !important;
+                color: #000000 !important;
+                display: block !important;
+                font-family: Arial, Helvetica, sans-serif !important;
+                font-size: 10pt !important;
+                line-height: 1.35 !important;
+              }
+              .no-print {
+                display: none !important;
+              }
+            }
+          `}</style>
+
+          <div
+            className={`w-full max-w-4xl max-h-[90vh] rounded-2xl border flex flex-col shadow-2xl overflow-hidden ${
+              isLight ? 'bg-white border-slate-200' : 'bg-slate-900 border-slate-800 text-white'
+            }`}
+          >
+            {/* Modal Controls Bar */}
+            <div className="p-3.5 border-b border-slate-800 flex items-center justify-between gap-3 bg-slate-950/40 no-print">
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-300">
+                <Printer className="w-4 h-4 text-emerald-400" />
+                <span>Pratinjau Laporan Laba / Rugi & Rekapitulasi Penjualan (A4)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => window.print()}
+                  className="px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>Cetak Dokumen Sekarang</span>
+                </button>
+                <button
+                  onClick={() => setIsPrintSalesModalOpen(false)}
+                  className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Document Content */}
+            <div className="flex-1 overflow-y-auto p-6 sm:p-8 bg-white text-slate-900">
+              <div id="printable-sales-pnl-doc" className="max-w-3xl mx-auto space-y-4">
+                {/* Official Letterhead (Kop Surat) */}
+                <div className="border-b-2 border-black pb-3 text-center">
+                  <h1 className="text-xl font-black uppercase tracking-wide">{branch?.branch_name || 'APOTEK VI-PHARMA'}</h1>
+                  <p className="text-xs text-slate-700 mt-0.5">{branch?.address || 'Jl. Pemuda No. 10, Jakarta'}</p>
+                  <div className="text-[11px] font-semibold text-slate-800 flex justify-center gap-6 mt-1">
+                    <span>No. SIA: <b>{branch?.sia_id || 'SIA-198402/DKS/2024'}</b></span>
+                    <span>No. SIPA: <b>{branch?.sipa || 'SIPA-199203/STRA/2024'}</b></span>
+                  </div>
+                </div>
+
+                {/* Title */}
+                <div className="text-center pt-1">
+                  <h2 className="text-sm font-bold uppercase tracking-wide">
+                    LAPORAN LABA / RUGI & ARUS KAS PENJUALAN APOTEK
+                  </h2>
+                  <p className="text-xs font-semibold text-slate-700">
+                    PERIODE: {startDate} s/d {endDate}
+                  </p>
+                </div>
+
+                {/* P&L Statement Table */}
+                <table className="w-full border-collapse border border-black text-[9.5pt] mt-3">
+                  <thead>
+                    <tr className="bg-slate-100 border border-black font-bold">
+                      <th className="border border-black p-2 text-left">Deskripsi Akun / Indikator Keuangan</th>
+                      <th className="border border-black p-2 text-right w-48">Nominal (Rp)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border border-black">
+                      <td className="border border-black p-2 font-semibold">1. Omzet Penjualan Kotor (Gross Sales)</td>
+                      <td className="border border-black p-2 text-right font-mono font-bold">
+                        Rp {(salesData.total_revenue || 0).toLocaleString('id-ID')}
+                      </td>
+                    </tr>
+                    <tr className="border border-black">
+                      <td className="border border-black p-2 pl-6 text-rose-700">
+                        (-) Retur Penjualan Pasien & Refund Kasir
+                      </td>
+                      <td className="border border-black p-2 text-right font-mono text-rose-700">
+                        (Rp {(salesData.total_returns || 0).toLocaleString('id-ID')})
+                      </td>
+                    </tr>
+                    <tr className="border border-black bg-slate-50 font-bold">
+                      <td className="border border-black p-2 font-bold">2. Penjualan Bersih (Net Revenue)</td>
+                      <td className="border border-black p-2 text-right font-mono font-bold">
+                        Rp {(salesData.net_revenue !== undefined ? salesData.net_revenue : ((salesData.total_revenue || 0) - (salesData.total_returns || 0))).toLocaleString('id-ID')}
+                      </td>
+                    </tr>
+                    <tr className="border border-black">
+                      <td className="border border-black p-2 pl-6 text-slate-800">
+                        (-) Beban Pokok Penjualan (HPP Barang Pembelian PBF)
+                      </td>
+                      <td className="border border-black p-2 text-right font-mono">
+                        (Rp {(salesData.total_cogs || 0).toLocaleString('id-ID')})
+                      </td>
+                    </tr>
+                    <tr className="border-t-2 border-b-2 border-black bg-slate-100 font-black">
+                      <td className="border border-black p-2 font-black">
+                        3. Laba Kotor Apotek (Gross Operating Profit)
+                      </td>
+                      <td className="border border-black p-2 text-right font-mono font-black text-emerald-800">
+                        Rp {(salesData.total_margin || 0).toLocaleString('id-ID')}
+                      </td>
+                    </tr>
+                    <tr className="border border-black text-[9pt]">
+                      <td className="border border-black p-2 italic text-slate-600">
+                        *Persentase Margin Keuntungan terhadap Penjualan Bersih
+                      </td>
+                      <td className="border border-black p-2 text-right font-mono font-bold">
+                        {salesData.margin_percent || 0}%
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                {/* Payment Methods Breakdown */}
+                <div className="pt-2">
+                  <h3 className="text-xs font-bold uppercase tracking-wider mb-1">Rincian Arus Kas Berdasarkan Metode Pembayaran:</h3>
+                  <table className="w-full border-collapse border border-black text-[9pt]">
+                    <thead>
+                      <tr className="bg-slate-100 border border-black font-bold">
+                        <th className="border border-black p-1.5 text-left">Metode Pembayaran</th>
+                        <th className="border border-black p-1.5 text-center w-28">Jumlah Struk</th>
+                        <th className="border border-black p-1.5 text-right w-44">Total Masuk (Rp)</th>
+                        <th className="border border-black p-1.5 text-center w-24">Porsi (%)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(salesData.payment_methods || []).map((pm, idx) => (
+                        <tr key={idx} className="border border-black">
+                          <td className="border border-black p-1.5 font-medium">{pm.payment_method}</td>
+                          <td className="border border-black p-1.5 text-center font-mono">{pm.count}</td>
+                          <td className="border border-black p-1.5 text-right font-mono">Rp {pm.total_amount.toLocaleString('id-ID')}</td>
+                          <td className="border border-black p-1.5 text-center font-mono">{pm.percentage}%</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Signature Section */}
+                <div className="pt-6 grid grid-cols-2 text-xs">
+                  <div className="text-center w-60">
+                    <p className="text-slate-800">Dibuat Oleh,</p>
+                    <p className="font-bold text-slate-800 mt-0.5">Petugas Kasir / Keuangan</p>
+                    <div className="h-16 flex items-center justify-center text-slate-300 italic text-[10px]">
+                      (Tanda Tangan)
+                    </div>
+                    <p className="font-black text-slate-900 underline">{user?.name || user?.username || 'Staff Keuangan'}</p>
+                    <p className="text-[10px] text-slate-600">Vi-Pharma Pos System</p>
+                  </div>
+
+                  <div className="text-center ml-auto w-60">
+                    <p className="text-slate-800">
+                      Jakarta, {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    </p>
+                    <p className="font-bold text-slate-800 mt-0.5">Apoteker Pengelola Apotek (APJ)</p>
+                    <div className="h-16 flex items-center justify-center text-slate-300 italic text-[10px]">
+                      (Tanda Tangan & Cap)
+                    </div>
+                    <p className="font-black text-slate-900 underline">{branch?.sipa_name || 'apt. Heru Oktafian, S.Farm.'}</p>
+                    <p className="text-[10px] text-slate-600">SIPA: {branch?.sipa || 'SIPA-199203/STRA/2024'}</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
