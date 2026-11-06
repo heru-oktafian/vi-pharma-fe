@@ -11,6 +11,7 @@ import ProcurementDashboard from './procurement/ProcurementDashboard';
 import POSDashboard from './pos/POSDashboard';
 import PrescriptionDashboard from './prescription/PrescriptionDashboard';
 import ReportsDashboard from './reports/ReportsDashboard';
+import SettingsDashboard from './settings/SettingsDashboard';
 
 export default function WorkstationDashboard({ user, branch, token, theme = 'dark', onToggleTheme, onSwitchBranch, onLogout, onRemoteLogout }) {
   const [branchDetail, setBranchDetail] = useState(null);
@@ -107,9 +108,9 @@ export default function WorkstationDashboard({ user, branch, token, theme = 'dar
       color: isLight
         ? 'bg-slate-100 text-slate-700 border-slate-200'
         : 'bg-slate-700/30 text-slate-300 border-slate-600/30',
-      badge: 'Admin Pusat',
-      roleAccess: ['superadmin'],
-      roleLabels: 'Khusus Superadmin'
+      badge: 'Admin & Sistem',
+      roleAccess: ['superadmin', 'admin'],
+      roleLabels: 'Superadmin, Admin'
     }
   ];
 
@@ -260,6 +261,21 @@ export default function WorkstationDashboard({ user, branch, token, theme = 'dar
             token={token}
             theme={theme}
             onBack={() => setActiveModule(null)}
+          />
+        ) : (activeModule === 'settings' || activeModule === 'pengaturan') ? (
+          <SettingsDashboard
+            user={user}
+            branch={branch}
+            token={token}
+            theme={theme}
+            onBack={() => setActiveModule(null)}
+            onBranchUpdated={() => {
+              if (branch?.id && token) {
+                getBranchDetail(branch.id, token)
+                  .then((data) => setBranchDetail(data))
+                  .catch((err) => console.error(err));
+              }
+            }}
           />
         ) : activeModule ? (
           <div className={`flex-1 min-h-0 rounded-2xl border p-8 flex flex-col items-center justify-center text-center max-w-lg mx-auto my-auto ${
