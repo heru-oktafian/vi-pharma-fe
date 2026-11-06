@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AlertTriangle, Clock, RefreshCw, ArrowRightLeft, ShieldAlert, CheckCircle2, Search, Warehouse, ShoppingCart } from 'lucide-react';
+import { AlertTriangle, Clock, RefreshCw, ArrowRightLeft, ShieldAlert, CheckCircle2, Search, Warehouse, ShoppingCart, Printer } from 'lucide-react';
 import { getFefoAlerts } from '../../services/inventoryApi';
 import RefillShelfModal from './RefillShelfModal';
 
@@ -176,6 +176,15 @@ export default function FefoWatcherView({ token, userRole, theme = 'dark', branc
           )}
 
           <button
+            onClick={() => window.print()}
+            className="px-2.5 py-1.5 rounded-lg border border-blue-500/30 text-blue-400 hover:text-white hover:bg-blue-500/20 text-xs font-semibold flex items-center gap-1.5 transition"
+            title="Cetak Laporan Pemantauan FEFO & Expired Date (A4)"
+          >
+            <Printer className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Cetak Daftar FEFO</span>
+          </button>
+
+          <button
             onClick={loadAlerts}
             className="p-1.5 rounded-lg border border-slate-500/30 text-slate-400 hover:text-white transition"
             title="Muat Ulang"
@@ -306,6 +315,99 @@ export default function FefoWatcherView({ token, userRole, theme = 'dark', branc
         token={token}
         onSuccess={loadAlerts}
       />
+
+      {/* Print CSS & Container for FEFO Expiry Watcher */}
+      <style>{`
+        @media print {
+          @page {
+            size: A4 portrait;
+            margin: 12mm 15mm;
+          }
+          html, body {
+            background: #ffffff !important;
+            color: #000000 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          body * {
+            visibility: hidden !important;
+          }
+          #printable-fefo-report,
+          #printable-fefo-report * {
+            visibility: visible !important;
+          }
+          #printable-fefo-report {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            background: #ffffff !important;
+            color: #000000 !important;
+            display: block !important;
+            font-family: Arial, sans-serif !important;
+            font-size: 10pt !important;
+          }
+        }
+      `}</style>
+
+      <div id="printable-fefo-report" className="hidden">
+        <div className="border-b-2 border-black pb-2 mb-4 flex justify-between items-start">
+          <div>
+            <h1 className="text-base font-black uppercase">{branch?.branch_name || 'APOTEK VI-PHARMA'}</h1>
+            <p className="text-xs text-gray-600">{branch?.address || 'Jl. Pemuda No. 10, Jakarta'}</p>
+          </div>
+          <div className="text-right text-xs">
+            <div>Tanggal Cetak: {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+            <div className="font-bold">LAPORAN MONITORING FEFO & EXPIRED DATE</div>
+          </div>
+        </div>
+
+        <table className="w-full text-left text-[10px] border-collapse border border-gray-300 mb-6">
+          <thead>
+            <tr className="bg-gray-100 border-b border-gray-300">
+              <th className="p-1.5 border-r border-gray-300 text-center w-8">No</th>
+              <th className="p-1.5 border-r border-gray-300">Nama Obat</th>
+              <th className="p-1.5 border-r border-gray-300 text-center w-24">No. Batch</th>
+              <th className="p-1.5 border-r border-gray-300 text-center w-24">Tgl Expired</th>
+              <th className="p-1.5 border-r border-gray-300 text-center w-20">Sisa Hari</th>
+              <th className="p-1.5 border-r border-gray-300 text-right w-16">Gudang</th>
+              <th className="p-1.5 border-r border-gray-300 text-right w-16">Rak Kasir</th>
+              <th className="p-1.5 border-r border-gray-300 text-right w-16">Total</th>
+              <th className="p-1.5 text-center w-20">Status</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-200">
+            {filteredAlerts.map((a, idx) => (
+              <tr key={idx}>
+                <td className="p-1.5 border-r border-gray-200 text-center">{idx + 1}</td>
+                <td className="p-1.5 border-r border-gray-200 font-semibold">{a.medicine_name}</td>
+                <td className="p-1.5 border-r border-gray-200 text-center font-mono">{a.batch_number}</td>
+                <td className="p-1.5 border-r border-gray-200 text-center">
+                  {new Date(a.expired_date).toLocaleDateString('id-ID')}
+                </td>
+                <td className="p-1.5 border-r border-gray-200 text-center font-bold">
+                  {a.days_to_expiry <= 0 ? `Expired (${Math.abs(a.days_to_expiry)}h lalu)` : `${a.days_to_expiry} hari`}
+                </td>
+                <td className="p-1.5 border-r border-gray-200 text-right font-mono">{a.qty_warehouse || 0}</td>
+                <td className="p-1.5 border-r border-gray-200 text-right font-mono">{a.qty_shelf || 0}</td>
+                <td className="p-1.5 border-r border-gray-200 text-right font-mono font-bold">{a.total_stock || 0}</td>
+                <td className="p-1.5 text-center font-bold">{a.alert_status}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        <div className="flex justify-between text-xs pt-4">
+          <div>
+            <p>Total Batch Terdata: {filteredAlerts.length} batch</p>
+          </div>
+          <div className="text-center w-48">
+            <p className="mb-12">Apoteker Penanggung Jawab,</p>
+            <p className="font-bold underline">( {branch?.pharmacist_in_charge || 'Apoteker Pengelola Apotek'} )</p>
+            <p className="text-[10px]">SIPA: {branch?.sipa_number || '-'}</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

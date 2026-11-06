@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { ClipboardCheck, Plus, RefreshCw, Eye, Warehouse, ShoppingCart, CheckCircle2, Clock, X } from 'lucide-react';
+import { ClipboardCheck, Plus, RefreshCw, Eye, Warehouse, ShoppingCart, CheckCircle2, Clock, X, Printer, FileText } from 'lucide-react';
 import { getOpnameList, getOpnameDetail } from '../../services/inventoryApi';
 import OpnameSessionModal from './OpnameSessionModal';
+import PrintableOpnameModal from './PrintableOpnameModal';
 
 export default function StockOpnameView({ token, userRole, theme = 'dark', branch }) {
   const isLight = theme === 'light';
@@ -13,6 +14,10 @@ export default function StockOpnameView({ token, userRole, theme = 'dark', branc
   const [selectedOpname, setSelectedOpname] = useState(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [loadingDetail, setLoadingDetail] = useState(false);
+
+  // Print Modal
+  const [printModalOpen, setPrintModalOpen] = useState(false);
+  const [printOpname, setPrintOpname] = useState(null);
 
   const loadOpnames = async () => {
     try {
@@ -156,13 +161,30 @@ export default function StockOpnameView({ token, userRole, theme = 'dark', branc
                         {sop.notes || '-'}
                       </td>
                       <td className="py-2.5 px-3 text-center">
-                        <button
-                          onClick={() => handleOpenDetail(sop.id)}
-                          className="p-1.5 rounded-lg border border-token-emerald/30 text-token-emerald hover:text-white hover:bg-token-emerald/20 transition"
-                          title="Lihat Detail Hasil Hitung"
-                        >
-                          <Eye className="w-3.5 h-3.5" />
-                        </button>
+                        <div className="flex items-center justify-center gap-1.5">
+                          <button
+                            onClick={() => handleOpenDetail(sop.id)}
+                            className="p-1.5 rounded-lg border border-token-emerald/30 text-token-emerald hover:text-white hover:bg-token-emerald/20 transition"
+                            title="Lihat Detail Hasil Hitung"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={async () => {
+                              try {
+                                const detail = await getOpnameDetail(sop.id, token);
+                                setPrintOpname(detail);
+                                setPrintModalOpen(true);
+                              } catch (e) {
+                                console.error('Failed to load opname for print:', e);
+                              }
+                            }}
+                            className="p-1.5 rounded-lg border border-blue-500/30 text-blue-400 hover:text-white hover:bg-blue-500/20 transition"
+                            title="Cetak Berita Acara Stok Opname (A4)"
+                          >
+                            <Printer className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -200,12 +222,25 @@ export default function StockOpnameView({ token, userRole, theme = 'dark', branc
                   {selectedOpname?.rack_name} ({selectedOpname?.location}) • Tanggal: {selectedOpname?.opname_date?.slice(0, 10)}
                 </p>
               </div>
-              <button
-                onClick={() => setDetailModalOpen(false)}
-                className="p-1 rounded-lg border hover:bg-slate-500/20 transition"
-              >
-                <X className="w-4 h-4" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPrintOpname(selectedOpname);
+                    setPrintModalOpen(true);
+                  }}
+                  className="px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white flex items-center gap-1.5 shadow-md transition"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  <span>Cetak Berita Acara</span>
+                </button>
+                <button
+                  onClick={() => setDetailModalOpen(false)}
+                  className="p-1 rounded-lg border hover:bg-slate-500/20 transition"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
             </div>
 
             <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-5 flex flex-col gap-3">
@@ -269,6 +304,14 @@ export default function StockOpnameView({ token, userRole, theme = 'dark', branc
           </div>
         </div>
       )}
+      {/* Printable Berita Acara Opname Modal */}
+      <PrintableOpnameModal
+        isOpen={printModalOpen}
+        onClose={() => setPrintModalOpen(false)}
+        opname={printOpname}
+        branch={branch}
+        theme={theme}
+      />
     </div>
   );
 }
