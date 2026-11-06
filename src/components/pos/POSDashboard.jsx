@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   ShoppingCart, Search, Barcode, Plus, Minus, Trash2, ArrowLeft,
   CreditCard, CheckCircle2, AlertCircle, RefreshCw, Layers, History,
-  User, Tag, Percent, Sparkles, Package, AlertTriangle, Zap, Store, RotateCcw
+  User, Tag, Percent, Sparkles, Package, AlertTriangle, Zap, Store, RotateCcw,
+  Pill
 } from 'lucide-react';
 import { getStockSummaries } from '../../services/inventoryApi';
 import { createSaleTransaction, getTodaySummary } from '../../services/posApi';
@@ -12,6 +13,7 @@ import SalesHistoryModal from './SalesHistoryModal';
 import SalesReturnModal from './SalesReturnModal';
 import SalesReturnsHistoryModal from './SalesReturnsHistoryModal';
 import SalesReturnReceiptModal from './SalesReturnReceiptModal';
+import PrescriptionQueueModal from './PrescriptionQueueModal';
 
 export default function POSDashboard({ user, branch, token, theme = 'dark', onBack }) {
   const isLight = theme === 'light';
@@ -41,6 +43,7 @@ export default function POSDashboard({ user, branch, token, theme = 'dark', onBa
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [receiptModalOpen, setReceiptModalOpen] = useState(false);
   const [historyModalOpen, setHistoryModalOpen] = useState(false);
+  const [prescriptionQueueOpen, setPrescriptionQueueOpen] = useState(false);
   const [salesReturnModalOpen, setSalesReturnModalOpen] = useState(false);
   const [salesReturnsHistoryModalOpen, setSalesReturnsHistoryModalOpen] = useState(false);
   const [createdReturnForReceipt, setCreatedReturnForReceipt] = useState(null);
@@ -81,10 +84,10 @@ export default function POSDashboard({ user, branch, token, theme = 'dark', onBa
 
   // Autofocus scanner input on load and after actions
   useEffect(() => {
-    if (!paymentModalOpen && !receiptModalOpen && !historyModalOpen && !salesReturnModalOpen && !salesReturnsHistoryModalOpen && !returnReceiptModalOpen) {
+    if (!paymentModalOpen && !receiptModalOpen && !historyModalOpen && !prescriptionQueueOpen && !salesReturnModalOpen && !salesReturnsHistoryModalOpen && !returnReceiptModalOpen) {
       scannerInputRef.current?.focus();
     }
-  }, [paymentModalOpen, receiptModalOpen, historyModalOpen, salesReturnModalOpen, salesReturnsHistoryModalOpen, returnReceiptModalOpen]);
+  }, [paymentModalOpen, receiptModalOpen, historyModalOpen, prescriptionQueueOpen, salesReturnModalOpen, salesReturnsHistoryModalOpen, returnReceiptModalOpen]);
 
   // Helper to get active price for medicine by tier
   const getMedicinePrice = (med, tier = priceTier) => {
@@ -338,6 +341,17 @@ export default function POSDashboard({ user, branch, token, theme = 'dark', onBa
           >
             <History className="w-3.5 h-3.5 text-blue-400" />
             <span>Riwayat Transaksi</span>
+          </button>
+
+          <button
+            onClick={() => setPrescriptionQueueOpen(true)}
+            className={`px-3 py-1 rounded-xl border text-xs font-bold transition flex items-center gap-1.5 ${
+              isLight ? 'bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200' : 'bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border-purple-500/30'
+            }`}
+            title="Antrean Resep Dokter & Formula Racikan Kasir"
+          >
+            <Pill className="w-3.5 h-3.5 text-purple-400" />
+            <span>Resep & Racikan</span>
           </button>
 
           <button
@@ -785,6 +799,15 @@ export default function POSDashboard({ user, branch, token, theme = 'dark', onBa
         onClose={() => setReturnReceiptModalOpen(false)}
         ret={createdReturnForReceipt}
         branch={branch}
+        theme={theme}
+      />
+
+      {/* Prescription & Compounding Queue Modal */}
+      <PrescriptionQueueModal
+        isOpen={prescriptionQueueOpen}
+        onClose={() => setPrescriptionQueueOpen(false)}
+        branch={branch}
+        token={token}
         theme={theme}
       />
     </div>

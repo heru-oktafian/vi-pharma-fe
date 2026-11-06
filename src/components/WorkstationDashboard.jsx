@@ -47,9 +47,9 @@ export default function WorkstationDashboard({ user, branch, token, theme = 'dar
       color: isLight
         ? 'bg-vip-navy-light text-vip-navy border-vip-navy-border'
         : 'bg-token-emerald/15 text-token-emerald border-token-emerald/25',
-      badge: 'Apoteker',
-      roleAccess: ['superadmin', 'admin', 'pharmacist'],
-      roleLabels: 'Superadmin, Admin, Apoteker'
+      badge: 'Apoteker & Resep',
+      roleAccess: ['superadmin', 'admin', 'pharmacist', 'cashier'],
+      roleLabels: 'Superadmin, Admin, Apoteker, Kasir'
     },
     {
       id: 'gudang',

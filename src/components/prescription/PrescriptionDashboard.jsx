@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   Pill, Plus, Search, RefreshCw, Filter, FileText, Printer, CheckCircle2,
   Clock, AlertTriangle, ChevronRight, User, Stethoscope, ArrowLeft, Tag,
-  Eye, Check, Sparkles, Building2
+  Eye, Check, Sparkles, Building2, CreditCard
 } from 'lucide-react';
 import {
   getPrescriptions,
@@ -12,6 +12,7 @@ import {
 import PrescriptionFormModal from './PrescriptionFormModal';
 import CopyReceiptModal from './CopyReceiptModal';
 import PrescriptionEtiketModal from './PrescriptionEtiketModal';
+import PrescriptionPaymentModal from './PrescriptionPaymentModal';
 
 export default function PrescriptionDashboard({ user, branch, token, theme, onBack }) {
   const isLight = theme === 'light';
@@ -28,6 +29,7 @@ export default function PrescriptionDashboard({ user, branch, token, theme, onBa
   const [showFormModal, setShowFormModal] = useState(false);
   const [selectedForCopy, setSelectedForCopy] = useState(null);
   const [selectedForEtiket, setSelectedForEtiket] = useState(null);
+  const [selectedForPayment, setSelectedForPayment] = useState(null);
   const [actionLoadingId, setActionLoadingId] = useState(null);
 
   // Fetch prescriptions list
@@ -447,6 +449,19 @@ export default function PrescriptionDashboard({ user, branch, token, theme, onBa
                           >
                             <Tag className="w-3.5 h-3.5" />
                           </button>
+
+                          {/* Bayar Kasir Button */}
+                          <button
+                            onClick={() => setSelectedForPayment(rx)}
+                            className={`p-1.5 rounded-lg border transition ${
+                              rx.is_paid
+                                ? 'bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/30 text-emerald-400'
+                                : 'bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/30 text-amber-400'
+                            }`}
+                            title={rx.is_paid ? 'Lihat / Cetak Struk Pembayaran Kasir' : 'Proses Pembayaran Kasir Resep Ini'}
+                          >
+                            <CreditCard className="w-3.5 h-3.5" />
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -486,6 +501,22 @@ export default function PrescriptionDashboard({ user, branch, token, theme, onBa
           branch={branch}
           theme={theme}
           onClose={() => setSelectedForEtiket(null)}
+        />
+      )}
+
+      {/* Modal: Kasir & Struk Pembayaran Resep */}
+      {selectedForPayment && (
+        <PrescriptionPaymentModal
+          isOpen={Boolean(selectedForPayment)}
+          onClose={() => setSelectedForPayment(null)}
+          prescription={selectedForPayment}
+          branch={branch}
+          token={token}
+          theme={theme}
+          onSuccess={loadPrescriptions}
+          onOpenEtiket={(rx) => {
+            setSelectedForEtiket(rx);
+          }}
         />
       )}
     </div>
