@@ -11,6 +11,7 @@ import {
   getCategoryMarginsReport,
   updateBranchBonusSetting
 } from '../../services/reportApi';
+import SipnapReportView from './SipnapReportView';
 
 export default function ReportsDashboard({ user, branch, token, theme, onBack }) {
   const isLight = theme === 'light';
@@ -48,6 +49,10 @@ export default function ReportsDashboard({ user, branch, token, theme, onBack })
 
   // Fetch Reports
   const loadReports = useCallback(async () => {
+    if (activeTab === 'sipnap') {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setErrorMsg('');
     try {
@@ -170,55 +175,57 @@ export default function ReportsDashboard({ user, branch, token, theme, onBack })
         </div>
 
         {/* Date Filter & Refresh */}
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-1 bg-black/20 p-1 rounded-xl border border-slate-700/60 text-xs">
+        {activeTab !== 'sipnap' && (
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-1 bg-black/20 p-1 rounded-xl border border-slate-700/60 text-xs">
+              <button
+                onClick={handleSetToday}
+                className="px-2.5 py-1 rounded-lg hover:bg-slate-700 text-slate-300 transition text-[11px]"
+              >
+                Hari Ini
+              </button>
+              <button
+                onClick={handleSetThisMonth}
+                className="px-2.5 py-1 rounded-lg bg-emerald-600/20 text-emerald-400 font-semibold border border-emerald-500/30 text-[11px]"
+              >
+                Bulan Ini
+              </button>
+            </div>
+
+            <div className="flex items-center gap-1.5 text-xs">
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className={`px-2.5 py-1.5 rounded-lg border text-xs ${
+                  isLight ? 'bg-white border-slate-300 text-slate-900' : 'bg-slate-800 border-slate-700 text-white'
+                }`}
+              />
+              <span className="text-slate-400">s/d</span>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className={`px-2.5 py-1.5 rounded-lg border text-xs ${
+                  isLight ? 'bg-white border-slate-300 text-slate-900' : 'bg-slate-800 border-slate-700 text-white'
+                }`}
+              />
+            </div>
+
             <button
-              onClick={handleSetToday}
-              className="px-2.5 py-1 rounded-lg hover:bg-slate-700 text-slate-300 transition text-[11px]"
+              onClick={loadReports}
+              disabled={loading}
+              className={`p-2 rounded-xl border transition ${
+                isLight
+                  ? 'bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700'
+                  : 'bg-slate-800 hover:bg-slate-700 border-slate-700 text-slate-300'
+              }`}
+              title="Muat Ulang Laporan"
             >
-              Hari Ini
-            </button>
-            <button
-              onClick={handleSetThisMonth}
-              className="px-2.5 py-1 rounded-lg bg-emerald-600/20 text-emerald-400 font-semibold border border-emerald-500/30 text-[11px]"
-            >
-              Bulan Ini
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             </button>
           </div>
-
-          <div className="flex items-center gap-1.5 text-xs">
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className={`px-2.5 py-1.5 rounded-lg border text-xs ${
-                isLight ? 'bg-white border-slate-300 text-slate-900' : 'bg-slate-800 border-slate-700 text-white'
-              }`}
-            />
-            <span className="text-slate-400">s/d</span>
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className={`px-2.5 py-1.5 rounded-lg border text-xs ${
-                isLight ? 'bg-white border-slate-300 text-slate-900' : 'bg-slate-800 border-slate-700 text-white'
-              }`}
-            />
-          </div>
-
-          <button
-            onClick={loadReports}
-            disabled={loading}
-            className={`p-2 rounded-xl border transition ${
-              isLight
-                ? 'bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700'
-                : 'bg-slate-800 hover:bg-slate-700 border-slate-700 text-slate-300'
-            }`}
-            title="Muat Ulang Laporan"
-          >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          </button>
-        </div>
+        )}
       </div>
 
       {/* Tab Navigation */}
@@ -263,6 +270,20 @@ export default function ReportsDashboard({ user, branch, token, theme, onBack })
         >
           <Layers className="w-4 h-4" />
           <span>Profitabilitas Kategori Obat</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('sipnap')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition border ${
+            activeTab === 'sipnap'
+              ? 'bg-purple-600 text-white border-purple-500 shadow-sm'
+              : isLight
+              ? 'bg-white hover:bg-slate-100 text-slate-700 border-slate-200'
+              : 'bg-slate-900/60 hover:bg-slate-800 text-slate-400 border-slate-800'
+          }`}
+        >
+          <ShieldCheck className="w-4 h-4 text-purple-300" />
+          <span>Laporan Resmi SIPNAP Kemenkes (Narkotika & Psikotropika)</span>
         </button>
       </div>
 
@@ -791,6 +812,18 @@ export default function ReportsDashboard({ user, branch, token, theme, onBack })
               </div>
             </div>
           </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* TAB 4: LAPORAN RESMI SIPNAP KEMENKES RI                        */}
+        {/* ============================================================== */}
+        {activeTab === 'sipnap' && (
+          <SipnapReportView
+            user={user}
+            branch={branch}
+            token={token}
+            theme={theme}
+          />
         )}
       </div>
 

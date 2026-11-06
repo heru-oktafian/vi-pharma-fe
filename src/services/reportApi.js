@@ -83,3 +83,15 @@ export async function getCategoryMarginsReport(token, params = {}, branchId = ''
   const qStr = query.toString() ? `?${query.toString()}` : '';
   return request(`/reports/category-margins${qStr}`, { method: 'GET' }, token, branchId);
 }
+
+export async function getSIPNAPReport(token, params = {}, branchId = '') {
+  const query = new URLSearchParams();
+  if (params.month) query.set('month', String(params.month));
+  if (params.year) query.set('year', String(params.year));
+  if (params.classification) query.set('classification', params.classification);
+  if (branchId) query.set('branch_id', branchId);
+
+  const qStr = query.toString() ? `?${query.toString()}` : '';
+  return request(`/reports/sipnap${qStr}`, { method: 'GET' }, token, branchId);
+}
+
