@@ -137,6 +137,44 @@ export async function submitOpnameSession(opnameId, data, token, branchId = '') 
   }, token, branchId);
 }
 
+// Collaborative Multi-User Opname (Sesi Induk & Setor per Rak)
+export async function getActiveParentOpname(token, branchId = '') {
+  const qStr = branchId ? `?branch_id=${branchId}` : '';
+  return request(`/inventory/opnames/parent/active${qStr}`, { method: 'GET' }, token, branchId);
+}
+
+export async function createParentOpnameSession(data, token, branchId = '') {
+  return request('/inventory/opnames/parent', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }, token, branchId);
+}
+
+export async function closeParentOpnameSession(opnameId, token, branchId = '') {
+  return request(`/inventory/opnames/parent/${opnameId}/close`, {
+    method: 'POST',
+    body: JSON.stringify({}),
+  }, token, branchId);
+}
+
+export async function getOpnameRackDetail(opnameId, rackId, token, branchId = '') {
+  return request(`/inventory/opnames/parent/${opnameId}/racks/${rackId}`, { method: 'GET' }, token, branchId);
+}
+
+export async function approveOpnameRack(opnameId, rackId, token, branchId = '') {
+  return request(`/inventory/opnames/parent/${opnameId}/approve-rack/${rackId}`, {
+    method: 'POST',
+    body: JSON.stringify({}),
+  }, token, branchId);
+}
+
+export async function rejectOpnameRack(opnameId, rackId, data, token, branchId = '') {
+  return request(`/inventory/opnames/parent/${opnameId}/reject-rack/${rackId}`, {
+    method: 'POST',
+    body: JSON.stringify(data || {}),
+  }, token, branchId);
+}
+
 // -------------------------------------------------------------
 // 7. Accounts Payable & Invoice Payments (Hutang Faktur PBF)
 // -------------------------------------------------------------
