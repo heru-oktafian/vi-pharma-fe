@@ -174,7 +174,9 @@ export default function POSDashboard({ user, branch, token, theme = 'dark', onBa
       // Partial match search
       const partial = stockCatalog.find(
         m => (m.name && m.name.toLowerCase().includes(query.toLowerCase())) ||
-             (m.item_code && m.item_code.toLowerCase().includes(query.toLowerCase()))
+             (m.item_code && m.item_code.toLowerCase().includes(query.toLowerCase())) ||
+             (m.generic_name && m.generic_name.toLowerCase().includes(query.toLowerCase())) ||
+             (m.indication && m.indication.toLowerCase().includes(query.toLowerCase()))
       );
 
       if (partial) {
@@ -276,7 +278,9 @@ export default function POSDashboard({ user, branch, token, theme = 'dark', onBa
       const q = catalogSearch.toLowerCase();
       const match = (m.name && m.name.toLowerCase().includes(q)) ||
                     (m.item_code && m.item_code.toLowerCase().includes(q)) ||
-                    (m.barcode && m.barcode.toLowerCase().includes(q));
+                    (m.barcode && m.barcode.toLowerCase().includes(q)) ||
+                    (m.generic_name && m.generic_name.toLowerCase().includes(q)) ||
+                    (m.indication && m.indication.toLowerCase().includes(q));
       if (!match) return false;
     }
     return true;
@@ -453,7 +457,7 @@ export default function POSDashboard({ user, branch, token, theme = 'dark', onBa
                 type="text"
                 value={catalogSearch}
                 onChange={(e) => setCatalogSearch(e.target.value)}
-                placeholder="Filter nama obat di katalog..."
+                placeholder="Filter obat..."
                 className={`w-full pl-8 pr-3 py-1.5 text-xs rounded-lg border ${
                   isLight ? 'bg-slate-50 border-slate-200' : 'bg-token-inner border-token-border text-white'
                 }`}
@@ -510,6 +514,12 @@ export default function POSDashboard({ user, branch, token, theme = 'dark', onBa
                       <div className="text-xs font-bold text-slate-900 dark:text-white line-clamp-2 leading-tight">
                         {med.name}
                       </div>
+                      {med.indication && (
+                        <div className="mt-1 text-[10px] text-amber-500/90 dark:text-amber-400/90 line-clamp-1 flex items-center gap-1 font-medium" title={`Indikasi: ${med.indication}`}>
+                          <Sparkles className="w-2.5 h-2.5 shrink-0" />
+                          <span className="truncate">{med.indication}</span>
+                        </div>
+                      )}
                     </div>
 
                     <div className="mt-2 pt-2 border-t border-token-border/40 flex items-baseline justify-between">
@@ -747,15 +757,6 @@ export default function POSDashboard({ user, branch, token, theme = 'dark', onBa
         theme={theme}
       />
 
-      {/* Thermal Receipt Print Modal */}
-      <ReceiptPrintModal
-        isOpen={receiptModalOpen}
-        onClose={() => setReceiptModalOpen(false)}
-        sale={lastCompletedSale}
-        branch={branch}
-        theme={theme}
-      />
-
       {/* Sales History Modal */}
       <SalesHistoryModal
         isOpen={historyModalOpen}
@@ -793,21 +794,30 @@ export default function POSDashboard({ user, branch, token, theme = 'dark', onBa
         theme={theme}
       />
 
-      {/* Sales Return Thermal Receipt Modal */}
-      <SalesReturnReceiptModal
-        isOpen={returnReceiptModalOpen}
-        onClose={() => setReturnReceiptModalOpen(false)}
-        ret={createdReturnForReceipt}
-        branch={branch}
-        theme={theme}
-      />
-
       {/* Prescription & Compounding Queue Modal */}
       <PrescriptionQueueModal
         isOpen={prescriptionQueueOpen}
         onClose={() => setPrescriptionQueueOpen(false)}
         branch={branch}
         token={token}
+        theme={theme}
+      />
+
+      {/* Thermal Receipt Print Modal (Placed after history modal for top stacking) */}
+      <ReceiptPrintModal
+        isOpen={receiptModalOpen}
+        onClose={() => setReceiptModalOpen(false)}
+        sale={lastCompletedSale}
+        branch={branch}
+        theme={theme}
+      />
+
+      {/* Sales Return Thermal Receipt Modal */}
+      <SalesReturnReceiptModal
+        isOpen={returnReceiptModalOpen}
+        onClose={() => setReturnReceiptModalOpen(false)}
+        ret={createdReturnForReceipt}
+        branch={branch}
         theme={theme}
       />
     </div>

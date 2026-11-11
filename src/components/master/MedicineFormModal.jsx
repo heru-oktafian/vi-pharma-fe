@@ -45,6 +45,7 @@ export default function MedicineFormModal({
     min_stock: 10,
     max_stock: 1000,
     storage_location: 'Rak A-1',
+    indication: '',
     is_active: true,
     // Etiket & Aturan Pakai
     label_type: 'dalam',
@@ -81,6 +82,7 @@ export default function MedicineFormModal({
         min_stock: editingItem.min_stock ?? 10,
         max_stock: editingItem.max_stock ?? 1000,
         storage_location: editingItem.storage_location || '',
+        indication: editingItem.indication || '',
         is_active: editingItem.is_active ?? true,
         label_type: editingItem.label_type || 'dalam',
         default_signa: editingItem.default_signa || '3 x Sehari 1 Tablet',
@@ -136,6 +138,7 @@ export default function MedicineFormModal({
         min_stock: 10,
         max_stock: 1000,
         storage_location: 'Rak A-1',
+        indication: '',
         is_active: true,
         label_type: 'dalam',
         default_signa: '3 x Sehari 1 Tablet',
@@ -267,6 +270,7 @@ export default function MedicineFormModal({
         min_stock: Number(form.min_stock) || 0,
         max_stock: Number(form.max_stock) || 0,
         storage_location: form.storage_location.trim(),
+        indication: form.indication?.trim() || '',
         default_supplier_id: form.default_supplier_id ? form.default_supplier_id : null,
         is_active: Boolean(form.is_active),
         label_type: form.label_type || 'dalam',
@@ -683,6 +687,29 @@ export default function MedicineFormModal({
                     }`}
                   />
                 </div>
+              </div>
+
+              {/* Indikasi / Khasiat Obat */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                    Indikasi / Khasiat Obat
+                  </label>
+                  <span className="text-[10px] text-amber-500/90 font-medium">
+                    (Membantu pencarian cepat di Kasir POS, pisahkan dengan koma)
+                  </span>
+                </div>
+                <textarea
+                  rows={2}
+                  placeholder="Contoh: Pusing, sakit kepala, demam, mual, sakit gigi, gusi bengkak, batuk berdahak, gatal jamur, gatal alergi..."
+                  value={form.indication}
+                  onChange={(e) => setForm({ ...form, indication: e.target.value })}
+                  className={`w-full px-3 py-2 rounded-lg text-xs border outline-hidden transition resize-y ${
+                    isLight
+                      ? 'bg-slate-50 border-vip-navy-border text-slate-900 focus:border-vip-navy'
+                      : 'bg-token-inner border-token-border text-slate-100 focus:border-token-emerald'
+                  }`}
+                />
               </div>
 
               {/* Toggles */}

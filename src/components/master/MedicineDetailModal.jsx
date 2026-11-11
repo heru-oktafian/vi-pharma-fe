@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Pill, ShieldCheck, MapPin, Package, Building2, Tag, Layers, DollarSign, AlertTriangle, CheckCircle2, Printer, Clock, QrCode } from 'lucide-react';
+import { X, Pill, ShieldCheck, MapPin, Package, Building2, Tag, Layers, DollarSign, AlertTriangle, CheckCircle2, Printer, Clock, QrCode, Sparkles } from 'lucide-react';
 import ClassificationBadge from './ClassificationBadge';
 
 export default function MedicineDetailModal({ medicine, isOpen, onClose, onOpenPrint, onOpenBarcode, theme = 'dark' }) {
@@ -100,6 +100,19 @@ export default function MedicineDetailModal({ medicine, isOpen, onClose, onOpenP
               <span className="font-semibold text-slate-700 dark:text-slate-200">{medicine.category?.name || '-'}</span>
             </div>
           </div>
+
+          {/* Indikasi / Khasiat Terapi */}
+          {medicine.indication && (
+            <div className={`p-3 rounded-xl border flex items-start gap-2.5 ${
+              isLight ? 'bg-amber-50/70 border-amber-200 text-slate-800' : 'bg-amber-500/10 border-amber-500/20 text-slate-200'
+            }`}>
+              <Sparkles className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+              <div>
+                <span className="text-[10px] uppercase font-bold text-amber-500 block tracking-wider">Indikasi / Khasiat Terapi</span>
+                <p className="text-xs font-medium leading-relaxed mt-0.5">{medicine.indication}</p>
+              </div>
+            </div>
+          )}
 
           {/* Standar Etiket & Aturan Pakai Pasien */}
           <div className={`p-3.5 rounded-xl border space-y-2.5 ${

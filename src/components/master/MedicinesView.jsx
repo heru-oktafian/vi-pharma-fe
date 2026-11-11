@@ -202,7 +202,7 @@ export default function MedicinesView({ token, userRole, theme = 'dark', branch 
             <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
-              placeholder="Cari nama obat, zat aktif, kode, barcode, atau No NIE..."
+              placeholder="Cari nama obat, indikasi/khasiat, zat aktif, kode, barcode, atau No NIE..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className={`w-full pl-9 pr-3 py-1.5 rounded-lg text-xs border outline-hidden transition ${
@@ -395,6 +395,11 @@ export default function MedicinesView({ token, userRole, theme = 'dark', branch 
                             {item.generic_name && (
                               <span className="text-[10px] text-slate-400 italic block leading-tight">
                                 {item.generic_name}
+                              </span>
+                            )}
+                            {item.indication && (
+                              <span className="text-[10px] text-amber-500/90 dark:text-amber-400/90 block leading-tight font-medium mt-0.5 line-clamp-1" title={`Indikasi: ${item.indication}`}>
+                                Indikasi: {item.indication}
                               </span>
                             )}
                             {/* Etiket & Signa Badge */}

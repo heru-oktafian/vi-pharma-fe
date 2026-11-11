@@ -28,7 +28,7 @@ export default function ReceiptPrintModal({ isOpen, onClose, sale, branch, theme
   const items = sale.items || [];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-xs animate-fadeIn">
+    <div className="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-xs animate-fadeIn">
       {/* Thermal Print CSS for POS Receipt (58mm / 80mm) */}
       {!showEtiketModal && (
         <style>{`

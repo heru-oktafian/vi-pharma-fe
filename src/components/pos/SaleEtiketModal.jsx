@@ -69,7 +69,7 @@ export default function SaleEtiketModal({
   const selectedItems = items.filter((it, idx) => selectedIds.includes(getItemKey(it, idx)));
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-xs animate-fadeIn">
+    <div className="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-xs animate-fadeIn">
       {/* Print Stylesheet targeting thermal labels */}
       <style>{`
         @media print {

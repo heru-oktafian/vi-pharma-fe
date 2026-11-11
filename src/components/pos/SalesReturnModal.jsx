@@ -214,7 +214,7 @@ export default function SalesReturnModal({
   const totalRefund = calculateTotalRefund();
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-xs animate-fadeIn overflow-y-auto">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-xs animate-fadeIn overflow-y-auto">
       <div className={`w-full max-w-3xl my-auto rounded-2xl border shadow-2xl flex flex-col max-h-[92vh] overflow-hidden transition-all ${
         isLight ? 'bg-white border-slate-200 text-slate-800' : 'bg-token-card border-token-border text-slate-100'
       }`}>

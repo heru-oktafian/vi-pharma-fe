@@ -45,7 +45,7 @@ export default function SalesReturnReceiptModal({ isOpen, onClose, ret, branch, 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-xs animate-fadeIn">
+    <div className="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-xs animate-fadeIn">
       {/* Thermal Print CSS for POS Return Receipt (58mm / 80mm) */}
       <style>{`
         @media print {
