@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import {
   Plus, Search, Eye, Edit2, Trash2, CheckCircle2, XCircle,
-  AlertCircle, RefreshCw, Filter, Layers, DollarSign, Tag, Pill,
-  AlertTriangle, Printer, FileText, QrCode
+  AlertCircle, RefreshCw, Filter, Layers, Pill,
+  Printer, QrCode
 } from 'lucide-react';
 import ClassificationBadge, { CLASSIFICATIONS } from './ClassificationBadge';
 import MedicineDetailModal from './MedicineDetailModal';

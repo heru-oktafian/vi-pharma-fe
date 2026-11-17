@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  BarChart3, Users, DollarSign, TrendingUp, Award, Calendar, RefreshCw,
-  ArrowLeft, Building2, HelpCircle, ArrowUpRight, Percent, Sparkles,
-  PieChart, CreditCard, Layers, Tag, ShieldCheck, AlertCircle, Save, CheckCircle2,
+  BarChart3, DollarSign, TrendingUp, Award, Calendar, RefreshCw,
+  ArrowLeft, Building2, Sparkles,
+  CreditCard, Layers, Tag, ShieldCheck, AlertCircle, Save, CheckCircle2,
   Eye, X, Lock, Download, Printer
 } from 'lucide-react';
 import {

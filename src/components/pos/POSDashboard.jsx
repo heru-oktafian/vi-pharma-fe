@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   ShoppingCart, Search, Barcode, Plus, Minus, Trash2, ArrowLeft,
-  CreditCard, CheckCircle2, AlertCircle, RefreshCw, Layers, History,
-  User, Tag, Percent, Sparkles, Package, AlertTriangle, Zap, Store, RotateCcw,
-  Pill
+  CreditCard, AlertCircle, RefreshCw, History,
+  Sparkles, Package, Zap, RotateCcw, Pill
 } from 'lucide-react';
 import { getStockSummaries } from '../../services/inventoryApi';
 import { createSaleTransaction, getTodaySummary } from '../../services/posApi';
@@ -22,7 +21,6 @@ export default function POSDashboard({ user, branch, token, theme = 'dark', onBa
   const [stockCatalog, setStockCatalog] = useState([]);
   const [loadingCatalog, setLoadingCatalog] = useState(true);
   const [catalogSearch, setCatalogSearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
 
   // Scanner Barcode Input State
   const [barcodeInput, setBarcodeInput] = useState('');

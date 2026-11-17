@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Printer, Tag, Calendar, User, CheckCircle2, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { X, Printer, CheckCircle2 } from 'lucide-react';
 
 export default function EtiketPrintPreviewModal({
   isOpen,
@@ -14,7 +14,7 @@ export default function EtiketPrintPreviewModal({
   const isLight = theme === 'light';
   const [patientName, setPatientName] = useState('Tn. Budi Santoso');
   const [patientAge, setPatientAge] = useState('38 Thn');
-  const [receiptNo, setReceiptNo] = useState(() => `R-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-001`);
+  const receiptNo = `R-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-001`;
 
   const targetMedicine = medicine || medicinesList[0] || {
     name: 'Paracetamol 500 mg',

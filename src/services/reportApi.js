@@ -45,12 +45,6 @@ export async function getStaffPerformanceReport(token, params = {}, branchId = '
   if (params.daily_bonus_reward !== undefined && params.daily_bonus_reward !== null) {
     query.set('daily_bonus_reward', String(params.daily_bonus_reward));
   }
-  if (params.bonus_pool !== undefined && params.bonus_pool !== null) {
-    query.set('bonus_pool', String(params.bonus_pool));
-  }
-  if (params.target_margin !== undefined && params.target_margin !== null) {
-    query.set('target_margin', String(params.target_margin));
-  }
   if (branchId) query.set('branch_id', branchId);
 
   const qStr = query.toString() ? `?${query.toString()}` : '';

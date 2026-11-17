@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
-  X, Plus, Trash2, Pill, Stethoscope, User, Calendar, CheckSquare,
-  Square, AlertTriangle, Calculator, Sparkles, Scale, Info
+  X, Plus, Trash2, Pill, Stethoscope, CheckSquare,
+  Square, AlertTriangle, Sparkles, Info
 } from 'lucide-react';
-import { getDoctors, getMedicines } from '../../services/masterDataApi';
+import { getDoctors } from '../../services/masterDataApi';
 import { getStockSummaries } from '../../services/inventoryApi';
 import { createPrescription } from '../../services/prescriptionApi';
 
@@ -40,7 +40,6 @@ export default function PrescriptionFormModal({ token, branch, theme, onClose, o
   const [screeningPharma, setScreeningPharma] = useState(true);
   const [screeningClinical, setScreeningClinical] = useState(true);
   const [screeningNotes, setScreeningNotes] = useState('');
-  const [rxNotes, setRxNotes] = useState('');
 
   // Prescription items (Non-racik & Racikan)
   const [items, setItems] = useState([
@@ -383,7 +382,7 @@ export default function PrescriptionFormModal({ token, branch, theme, onClose, o
       screening_pharma: screeningPharma,
       screening_clinical: screeningClinical,
       screening_notes: screeningNotes.trim(),
-      notes: rxNotes.trim(),
+      notes: screeningNotes.trim(),
       items: payloadItems
     };
 

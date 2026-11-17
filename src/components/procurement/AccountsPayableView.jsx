@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   DollarSign, AlertTriangle, Clock, CheckCircle2, Search, RefreshCw,
-  Calendar, Building2, Filter, ArrowUpDown, ChevronRight, Eye, CreditCard
+  Filter, Eye, CreditCard
 } from 'lucide-react';
 import { getAccountsPayableSummary, getAccountsPayableInvoices, getPurchaseInvoiceDetail } from '../../services/inventoryApi';
 import { getSuppliers } from '../../services/masterDataApi';

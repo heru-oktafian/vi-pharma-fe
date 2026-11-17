@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, FileText, ShieldAlert, AlertTriangle, Building2, Plus, Sparkles, CheckCircle2, RotateCcw, DollarSign } from 'lucide-react';
+import { ArrowLeft, FileText, ShieldAlert, AlertTriangle, RotateCcw, DollarSign } from 'lucide-react';
 import PurchaseOrdersListView from './PurchaseOrdersListView';
 import AutoReorderView from './AutoReorderView';
 import PurchaseOrderFormModal from './PurchaseOrderFormModal';
@@ -32,9 +32,6 @@ export default function ProcurementDashboard({ user, branch, token, theme = 'dar
   const [printReturnModalOpen, setPrintReturnModalOpen] = useState(false);
   const [printReturn, setPrintReturn] = useState(null);
 
-  // Fast SP creation from ROP recommendations
-  const [fastItems, setFastItems] = useState(null);
-
   const tabs = [
     { id: 'all', label: 'Semua Surat Pesanan (SP)', icon: FileText, desc: 'Daftar PO reguler & seluruh distributor PBF' },
     { id: 'special', label: 'SP Khusus (Narkotika & Prekursor)', icon: ShieldAlert, desc: 'Surat Pesanan dengan regulasi khusus BPOM & SIPA' },
@@ -45,7 +42,6 @@ export default function ProcurementDashboard({ user, branch, token, theme = 'dar
 
   const handleOpenCreate = () => {
     setEditPO(null);
-    setFastItems(null);
     setFormModalOpen(true);
   };
 

@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  X, Search, RefreshCw, Printer, Calendar, User, CheckCircle2,
-  AlertCircle, ChevronRight, Hash, DollarSign, Tag, RotateCcw
+  X, Search, RefreshCw, Printer, DollarSign, Tag, RotateCcw
 } from 'lucide-react';
 import { getSalesHistory, getSaleDetail } from '../../services/posApi';
 import SaleEtiketModal from './SaleEtiketModal';
@@ -44,13 +43,6 @@ export default function SalesHistoryModal({
   const [returnReceiptOpen, setReturnReceiptOpen] = useState(false);
   const [createdReturn, setCreatedReturn] = useState(null);
 
-  const formatIDR = (val) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      maximumFractionDigits: 0
-    }).format(val || 0);
-  };
 
   const formatDateTime = (dateStr) => {
     if (!dateStr) return '-';

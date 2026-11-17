@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  Pill, Plus, Search, RefreshCw, Filter, FileText, Printer, CheckCircle2,
-  Clock, AlertTriangle, ChevronRight, User, Stethoscope, ArrowLeft, Tag,
-  Eye, Check, Sparkles, Building2, CreditCard
+  Pill, Plus, Search, RefreshCw, Filter, FileText, CheckCircle2,
+  Clock, AlertTriangle, ArrowLeft, Tag,
+  Check, Sparkles, Building2, CreditCard
 } from 'lucide-react';
 import {
   getPrescriptions,
@@ -247,6 +247,17 @@ export default function PrescriptionDashboard({ user, branch, token, theme, onBa
           <div className="text-xl font-black text-emerald-400 mt-0.5">{countSelesai} Resep</div>
         </div>
       </div>
+
+      {/* Error Alert */}
+      {errorMsg && (
+        <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 shrink-0" />
+            <span>{errorMsg}</span>
+          </div>
+          <button onClick={() => setErrorMsg('')} className="underline text-[11px] hover:text-white">Tutup</button>
+        </div>
+      )}
 
       {/* Filter & Search Bar */}
       <div

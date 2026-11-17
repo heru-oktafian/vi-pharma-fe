@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  X, RotateCcw, Search, RefreshCw, Printer, Calendar, User, CheckCircle2,
-  AlertCircle, ChevronRight, Hash, DollarSign
+  X, RotateCcw, Search, RefreshCw, Printer
 } from 'lucide-react';
 import { getSalesReturns, getSalesReturnDetail } from '../../services/posApi';
 import SalesReturnReceiptModal from './SalesReturnReceiptModal';
